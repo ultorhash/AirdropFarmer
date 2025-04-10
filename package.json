@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "start": "ts-node bot.ts"
+  },
+  "dependencies": {
+    "playwright": "^1.51.1"
+  }
+}
