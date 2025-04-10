@@ -1,4 +1,6 @@
-import { loadExtension, createWallet, addAndEnableNetwork } from "./utils";
+import { loadExtension } from "./utils/setup";
+import { createWallet, addAndSwitchToTestnetNetwork, switchToTestnetNetwork } from "./utils/metamask";
+import { rover } from "./utils/botanix-protocols";
 import { Network } from "./types";
 
 const seed = ["stomach", "focus", "ostrich", "thank", "hundred", "fuel", "flower", "boss", "sure", "boy", "riot", "figure"];
@@ -12,9 +14,14 @@ const network: Network = {
 }
 
 const main = async () => {
-  const page = await loadExtension();
+  const { context, page } = await loadExtension();
   await createWallet(page, seed, password);
-  await addAndEnableNetwork(page, network);
+  await switchToTestnetNetwork(page, "Mega Testnet");
+
+  //await addAndSwitchToTestnetNetwork(page, network);
+
+  // protocols
+  //await rover(context);
 }
 
 main();

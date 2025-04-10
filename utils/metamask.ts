@@ -33,7 +33,21 @@ export const createWallet = async (
   page.locator('[data-testid="pin-extension-done"]').click();
 }
 
-export const addAndEnableNetwork = async (page: Page, network: Network): Promise<void> => {
+export const switchToTestnetNetwork = async (page: Page, name: string): Promise<void> => {
+  page.locator('[data-testid="network-display"]').click();
+  const div = page.locator('.multichain-network-list-menu');
+
+  const box = await div.boundingBox();
+  await page.mouse.wheel(0, box.height);
+
+  const toggle = page.locator('input[type="checkbox"]');
+  await toggle.check({ force: true });
+
+  const testnetNetworks = page.locator(`[data-testid="${name}"]`);
+  testnetNetworks.click();
+}
+
+export const addAndSwitchToTestnetNetwork = async (page: Page, network: Network): Promise<void> => {
   page.locator('[data-testid="network-display"]').click();
   page.locator('text="Add a custom network"').click();
 
