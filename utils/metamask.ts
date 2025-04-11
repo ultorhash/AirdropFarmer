@@ -76,3 +76,10 @@ export const addAndSwitchToTestnetNetwork = async (page: Page, network: Network)
 
   await enabledNetworks.click();
 }
+
+export const selectAccount = async (page: Page, accountName: string): Promise<void> => {
+  const accountPicker = page.locator('[data-testid="account-menu-icon"]');
+  accountPicker.click();
+  const account = page.locator(`button.mm-box.mm-text.multichain-account-list-item__account-name__button:has-text("${accountName}")`);
+  account.click();
+}

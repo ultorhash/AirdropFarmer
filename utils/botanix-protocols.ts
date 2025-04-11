@@ -1,9 +1,8 @@
 import { BrowserContext } from "playwright";
 
-export const rover = async (context: BrowserContext) => {
+export const rover = async (context: BrowserContext): Promise<void> => {
   const page = await context.newPage();
   page.goto("https://testnet.roverstaking.com/stake");
-
   await page.waitForLoadState('domcontentloaded');
 
   page.locator('text="CONNECT WALLET"').click();
@@ -20,7 +19,9 @@ export const rover = async (context: BrowserContext) => {
   await connectPopup.waitForEvent('close');
 
   const input = page.locator('input[placeholder="0.00"]');
-  await input.fill(0.000001.toString());
+  const randomNumber = Math.random() * (0.00004 - 0.00001) + 0.00001;
+  const roundedNumber = parseFloat(randomNumber.toFixed(5));
+  await input.fill(roundedNumber.toString());
 
   page.locator('text="STAKE BTC"').click();
 
@@ -35,6 +36,17 @@ export const rover = async (context: BrowserContext) => {
   await page.click('summary');
   await page.click('button:has-text("Disconnect")');
 
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
   await page.context().clearCookies();
   await page.close();
 }
+
+// export const arch = () => {
+//   const page = await context.newPage();
+//   page.goto("https://testnet.roverstaking.com/stake");
+//   await page.waitForLoadState('domcontentloaded');
+// }
+
