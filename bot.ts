@@ -1,31 +1,37 @@
 import { loadExtension } from "./utils/setup";
-import { createWallet, switchToTestnetNetwork, addAndSwitchToTestnetNetwork, selectAccount } from "./utils/metamask";
+import { createWallet, addAndSwitchToTestnetNetwork } from "./utils/metamask";
 import { Network } from "./types";
-import { bebop, gte } from "./utils/megaeth-protocols";
-import { rover } from "./utils/botanix-protocols";
+import { clober, gasPump } from "./utils/rise-protocols";
 
 const seed = ["stomach", "focus", "ostrich", "thank", "hundred", "fuel", "flower", "boss", "sure", "boy", "riot", "figure"];
 const password = "Test123#bwGv23%!";
 
-const network: Network = {
+const botanix: Network = {
   name: "Botanix Testnet",
   rpcUrl: "https://node.botanixlabs.dev",
   chainId: 3636,
   symbol: "BTC"
 }
 
-const main = async () => {
-  const { context, page } = await loadExtension();
-  await createWallet(page, seed, password);
-  //await switchToTestnetNetwork(page, "Mega Testnet");
-  await addAndSwitchToTestnetNetwork(page, network);
-
-  for (let i = 1; i <= 1; i++) {
-    await selectAccount(page, `Account ${i}`);
-    await page.waitForTimeout(1500);
-
-    await rover(context);
-  }
+const rise: Network = {
+  name: "RISE Testnet",
+  rpcUrl: "https://testnet.riselabs.xyz",
+  chainId: 11155931,
+  symbol: "ETH"
 }
 
-main();
+const steps = async (seed: string[], password: string) => {
+  const { context, page } = await loadExtension();
+  await createWallet(page, seed, password);
+  await addAndSwitchToTestnetNetwork(page, rise);
+  await clober(context);
+}
+
+const run = async () => {
+
+  await Promise.all([
+    steps(seed, password)
+  ]);
+};
+
+run().catch(console.error);
