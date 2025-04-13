@@ -33,8 +33,8 @@ export const gaspump = async (context: BrowserContext, min: number, max: number)
 
   await page.waitForTimeout(2000);
 
-  const amount = Math.random() * (max - min) + min;
-  await page.locator('.base-Input-input').first().fill(amount.toFixed(6));
+  const amount = (Math.random() * (max - min) + min).toFixed(6);
+  await page.locator('.base-Input-input').first().fill(amount);
 
   const swapBtn = page.locator('[data-testid="swap-review-btn"]');
   await page.waitForFunction((el) => {
@@ -77,8 +77,8 @@ export const clober = async (context: BrowserContext, min: number, max: number) 
 
   await connectPopup.waitForEvent('close');
 
-  const amount = Math.random() * (max - min) + min;
-  page.locator('input.flex-1').first().fill(amount.toFixed(6));
+  const amount = (Math.random() * (max - min) + min).toFixed(6);
+  page.locator('input.flex-1').first().fill(amount);
   const swapBtn = page.locator('button:has-text("Swap")').nth(2);
   await swapBtn.waitFor({ state: 'visible' });
   swapBtn.click();
@@ -98,8 +98,51 @@ export const clober = async (context: BrowserContext, min: number, max: number) 
   await page.close();
 }
 
-export const inarifi = async (context: BrowserContext) => {
+export const inarifi = async (context: BrowserContext, min: number, max: number) => {
   const page = await context.newPage();
   page.goto("https://www.inarifi.com/?marketName=proto_inari_rise");
   await page.waitForLoadState('domcontentloaded');
+
+  await page.locator('a[href*="/markets"]').click();
+  await page.locator('a[href*="/reserve-overview/?underlyingAsset=0x4200000000000000000000000000000000000006&marketName=proto_inari_rise"]').click();
+  await page.locator('button:has-text("Accept and Connect")').click();
+  await page.locator('button:has-text("Browser wallet")').first().click({ force: true });
+
+  const [connectPopup] = await Promise.all([
+    context.waitForEvent('page')
+  ]);
+
+  await connectPopup.waitForLoadState('domcontentloaded');
+  const connect = await connectPopup.waitForSelector('[data-testid="confirm-btn"]');
+  connect.click();
+
+  await connectPopup.waitForEvent('close');
+
+  await page.locator('[data-cy="supplyButton"]').click();
+  const amount = (Math.random() * (max - min) + min).toFixed(6);
+  await page.locator('input[aria-label="amount input"]').fill(amount);
+
+  const isApprovalNeeded = await page.locator('[data-cy="approvalButton"]').isVisible({ timeout: 3000 });
+  if (isApprovalNeeded) {
+    await page.locator('[data-cy="approvalButton"]').click();
+    const [spendingCapPopup] = await Promise.all([
+      context.waitForEvent('page')
+    ]);
+
+    await spendingCapPopup.waitForLoadState('domcontentloaded');
+    const spendingCap = await spendingCapPopup.waitForSelector('[data-testid="confirm-footer-button"]');
+    spendingCap.click();
+  }
+
+  await page.locator('[data-cy="actionButton"]').click();
+  const [depositPopup] = await Promise.all([
+    context.waitForEvent('page')
+  ]);
+
+  await depositPopup.waitForLoadState('domcontentloaded');
+  const deposit = await depositPopup.waitForSelector('[data-testid="confirm-footer-button"]');
+  deposit.click();
+
+  await page.context().clearCookies();
+  await page.close();
 }
