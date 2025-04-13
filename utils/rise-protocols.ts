@@ -1,6 +1,6 @@
 import { BrowserContext } from "playwright";
 
-export const gasPump = async (context: BrowserContext) => {
+export const gaspump = async (context: BrowserContext, min: number, max: number) => {
   const page = await context.newPage();
   page.goto("https://gaspump.network");
   await page.waitForLoadState('domcontentloaded');
@@ -20,12 +20,46 @@ export const gasPump = async (context: BrowserContext) => {
 
   await page.mouse.click(100, 200);
   await page.locator('[data-testid="swap-select-token-btn"]').first().click();
-  await page.locator('div.token-list').waitFor({ state: 'visible', timeout: 2000 }); 
-  await page.locator('div:has-text("Ether")').click();
-  await page.locator('.base-Input-input').fill(0.00003.toString());
+  await page.locator('[data-testid="token-picker-item"]').filter({
+    has: page.locator('div:nth-child(2)', { hasText: 'Ether' })
+  }).first().click();
+
+  await page.waitForTimeout(2000);
+
+  await page.locator('[data-testid="swap-select-token-btn"]').nth(1).click();
+  await page.locator('[data-testid="token-picker-item"]').filter({
+    has: page.locator('div:nth-child(2)', { hasText: 'WETH' })
+  }).first().click();
+
+  await page.waitForTimeout(2000);
+
+  const amount = Math.random() * (max - min) + min;
+  await page.locator('.base-Input-input').first().fill(amount.toFixed(6));
+
+  const swapBtn = page.locator('[data-testid="swap-review-btn"]');
+  await page.waitForFunction((el) => {
+    return !el.classList.contains('base--disabled');
+  }, await swapBtn.elementHandle());
+
+  await swapBtn.click();
+  await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
+
+  const [txPopup] = await Promise.all([
+    context.waitForEvent('page')
+  ]);
+
+  await txPopup.waitForLoadState('domcontentloaded');
+  const approve = await txPopup.waitForSelector('[data-testid="confirm-footer-button"]');
+  approve.click();
+
+  await page.locator('text="1 pending..."').click();
+  await page.locator('[data-testid="DisconnectIcon"]').click();
+
+  await page.context().clearCookies();
+  await page.close();
 }
 
-export const clober = async (context: BrowserContext) => {
+export const clober = async (context: BrowserContext, min: number, max: number) => {
   const page = await context.newPage();
   page.goto("https://rise.clober.io/trade?chain=11155931");
   await page.waitForLoadState('domcontentloaded');
@@ -43,7 +77,8 @@ export const clober = async (context: BrowserContext) => {
 
   await connectPopup.waitForEvent('close');
 
-  page.locator('input.flex-1').first().fill(0.00005.toString());
+  const amount = Math.random() * (max - min) + min;
+  page.locator('input.flex-1').first().fill(amount.toFixed(6));
   const swapBtn = page.locator('button:has-text("Swap")').nth(2);
   await swapBtn.waitFor({ state: 'visible' });
   swapBtn.click();
@@ -61,4 +96,10 @@ export const clober = async (context: BrowserContext) => {
 
   await page.context().clearCookies();
   await page.close();
+}
+
+export const inarifi = async (context: BrowserContext) => {
+  const page = await context.newPage();
+  page.goto("https://www.inarifi.com/?marketName=proto_inari_rise");
+  await page.waitForLoadState('domcontentloaded');
 }
