@@ -21,9 +21,9 @@ const rise: Network = {
 }
 
 const steps = async (seed: string[], password: string) => {
-  const numberOfAccounts = 5;
+  const numberOfAccounts = 10;
 
-  for (let i = 3; i <= numberOfAccounts; i++) {
+  for (let i = 7; i <= numberOfAccounts; i++) {
     const { context, page } = await loadExtension();
 
     await createWallet(page, seed, password);

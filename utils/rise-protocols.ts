@@ -14,17 +14,17 @@ export const gaspump = async (context: BrowserContext, min: number, max: number)
   await page.mouse.click(100, 200);
   await page.locator('[data-testid="swap-select-token-btn"]').first().click();
   await page.locator('[data-testid="token-picker-item"]').filter({
-    has: page.locator('div:nth-child(2)', { hasText: 'Ether' })
+    has: page.locator('div:nth-child(2)', { hasText: /^Ether$/ })
   }).first().click();
 
   await page.waitForTimeout(2000);
 
   await page.locator('[data-testid="swap-select-token-btn"]').nth(1).click();
   await page.locator('[data-testid="token-picker-item"]').filter({
-    has: page.locator('div:nth-child(2)', { hasText: 'WETH' })
+    has: page.locator('div:nth-child(2)', { hasText: /^WETH$/ })
   }).first().click();
 
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(500);
 
   const amount = (Math.random() * (max - min) + min).toFixed(6);
   await page.locator('.base-Input-input').first().fill(amount);

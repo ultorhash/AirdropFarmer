@@ -71,10 +71,8 @@ export const addAndSwitchToTestnetNetwork = async (page: Page, network: Network)
 
   await page.locator('.networks-tab__network-form__footer button').click();
 
-  page.locator('[data-testid="network-display"]').click();
-  const enabledNetworks = page.locator(`[data-testid="${network.name}"]`);
-
-  await enabledNetworks.click();
+  await page.locator('[data-testid="network-display"]').click();
+  await page.locator(`[data-testid="${network.name}"]`).click();
 }
 
 export const selectAccount = async (page: Page, accountName: string): Promise<void> => {
