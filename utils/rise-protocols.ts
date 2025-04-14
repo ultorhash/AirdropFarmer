@@ -55,10 +55,11 @@ export const gaspump = async (context: BrowserContext, min: number, max: number)
   await page.locator('text="1 pending..."').click();
   await page.locator('[data-testid="DisconnectIcon"]').click();
 
-  await page.context().clearCookies();
+  await page.waitForTimeout(1000);
   await page.close();
 }
 
+// DEPRECATED
 export const clober = async (context: BrowserContext, min: number, max: number) => {
   const page = await context.newPage();
   page.goto("https://rise.clober.io/trade?chain=11155931");
@@ -94,7 +95,7 @@ export const clober = async (context: BrowserContext, min: number, max: number) 
   page.locator('button.group').locator('text=0x').click();
   await page.locator('button.p-1.sm\\:p-2.bg-gray-700.rounded-lg.flex.flex-col.items-center.justify-center.w-6.sm\\:w-8.h-6.sm\\:h-8 svg path[fill="#EF4444"]').click();
 
-  await page.context().clearCookies();
+  await page.waitForTimeout(1000);
   await page.close();
 }
 
@@ -122,8 +123,12 @@ export const inarifi = async (context: BrowserContext, min: number, max: number)
   const amount = (Math.random() * (max - min) + min).toFixed(6);
   await page.locator('input[aria-label="amount input"]').fill(amount);
 
-  const isApprovalNeeded = await page.locator('[data-cy="approvalButton"]').isVisible({ timeout: 3000 });
-  if (isApprovalNeeded) {
+  const approvalButton = await page.waitForSelector('[data-cy="approvalButton"]', {
+    timeout: 4000,
+    state: 'visible'
+  }).catch(() => null);
+
+  if (approvalButton) {
     await page.locator('[data-cy="approvalButton"]').click();
     const [spendingCapPopup] = await Promise.all([
       context.waitForEvent('page')
@@ -132,7 +137,14 @@ export const inarifi = async (context: BrowserContext, min: number, max: number)
     await spendingCapPopup.waitForLoadState('domcontentloaded');
     const spendingCap = await spendingCapPopup.waitForSelector('[data-testid="confirm-footer-button"]');
     spendingCap.click();
+    await spendingCapPopup.waitForEvent('close');
+
+    await page.mouse.click(100, 200);
+    await page.waitForTimeout(5000);
   }
+
+  await page.locator('[data-cy="supplyButton"]').click();
+  await page.locator('input[aria-label="amount input"]').fill(amount);
 
   await page.locator('[data-cy="actionButton"]').click();
   const [depositPopup] = await Promise.all([
@@ -143,6 +155,6 @@ export const inarifi = async (context: BrowserContext, min: number, max: number)
   const deposit = await depositPopup.waitForSelector('[data-testid="confirm-footer-button"]');
   deposit.click();
 
-  await page.context().clearCookies();
+  await page.waitForTimeout(1000)
   await page.close();
 }

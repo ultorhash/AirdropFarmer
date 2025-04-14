@@ -21,9 +21,9 @@ const rise: Network = {
 }
 
 const steps = async (seed: string[], password: string) => {
-  const numberOfAccounts = 1;
+  const numberOfAccounts = 5;
 
-  for (let i = 1; i <= numberOfAccounts; i++) {
+  for (let i = 3; i <= numberOfAccounts; i++) {
     const { context, page } = await loadExtension();
 
     await createWallet(page, seed, password);
@@ -31,11 +31,10 @@ const steps = async (seed: string[], password: string) => {
     await selectAccount(page, `Account ${i}`);
     await page.waitForTimeout(2000);
 
-    // await gaspump(context, 0.00003, 0.00005);
-    // await clober(context, 0.00002, 0.00007);
-    await inarifi(context, 0.00001, 0.00002);
+    await gaspump(context, 0.00003, 0.00005);
+    // await inarifi(context, 0.00001, 0.00002);
   
-    //context.close();
+    context.close();
   }
 }
 
