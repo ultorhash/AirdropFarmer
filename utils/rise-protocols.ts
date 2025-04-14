@@ -1,6 +1,7 @@
 import { BrowserContext } from "playwright";
+import { confirmTx, connectWallet } from "./metamask";
 
-export const gaspump = async (context: BrowserContext, min: number, max: number) => {
+export const gaspump = async (context: BrowserContext, min: number, max: number): Promise<void> => {
   const page = await context.newPage();
   page.goto("https://gaspump.network");
   await page.waitForLoadState('domcontentloaded');
@@ -8,15 +9,7 @@ export const gaspump = async (context: BrowserContext, min: number, max: number)
   page.locator('text="Connect a wallet"').click();
   page.locator('text="MetaMask"').click();
 
-  const [connectPopup] = await Promise.all([
-    context.waitForEvent('page')
-  ]);
-
-  await connectPopup.waitForLoadState('domcontentloaded');
-  const connect = await connectPopup.waitForSelector('[data-testid="confirm-btn"]');
-  connect.click();
-
-  await connectPopup.waitForEvent('close');
+  await connectWallet(context);
 
   await page.mouse.click(100, 200);
   await page.locator('[data-testid="swap-select-token-btn"]').first().click();
@@ -44,13 +37,7 @@ export const gaspump = async (context: BrowserContext, min: number, max: number)
   await swapBtn.click();
   await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
 
-  const [txPopup] = await Promise.all([
-    context.waitForEvent('page')
-  ]);
-
-  await txPopup.waitForLoadState('domcontentloaded');
-  const approve = await txPopup.waitForSelector('[data-testid="confirm-footer-button"]');
-  approve.click();
+  await confirmTx(context);
 
   await page.locator('text="1 pending..."').click();
   await page.locator('[data-testid="DisconnectIcon"]').click();
@@ -155,6 +142,6 @@ export const inarifi = async (context: BrowserContext, min: number, max: number)
   const deposit = await depositPopup.waitForSelector('[data-testid="confirm-footer-button"]');
   deposit.click();
 
-  await page.waitForTimeout(1000)
+  await page.waitForTimeout(1000);
   await page.close();
 }

@@ -1,4 +1,4 @@
-import { Page } from "playwright";
+import { BrowserContext, Page } from "playwright";
 import { Network } from "../types";
 
 export const createWallet = async (
@@ -82,4 +82,24 @@ export const selectAccount = async (page: Page, accountName: string): Promise<vo
   accountPicker.click();
   const account = page.locator(`button.mm-box.mm-text.multichain-account-list-item__account-name__button:has-text("${accountName}")`);
   account.click();
+
+  await page.waitForTimeout(2000);
+}
+
+export const connectWallet = async (context: BrowserContext): Promise<void> => {
+  const connectPopup = await context.waitForEvent('page');
+
+  await connectPopup.waitForLoadState('domcontentloaded');
+  await connectPopup.locator('[data-testid="confirm-btn"]').click();
+  await connectPopup.waitForEvent('close');
+}
+
+export const confirmTx = async (context: BrowserContext): Promise<void> => {
+  const txPopup = await context.waitForEvent('page');
+
+  await txPopup.waitForLoadState('domcontentloaded');
+  const approve = await txPopup.waitForSelector('[data-testid="confirm-footer-button"]');
+  approve.click();
+
+  await txPopup.waitForEvent('close');
 }
