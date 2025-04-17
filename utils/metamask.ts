@@ -78,10 +78,12 @@ export const addAndSwitchToTestnetNetwork = async (page: Page, network: Network)
 export const selectAccount = async (page: Page, accountName: string): Promise<void> => {
   const accountPicker = page.locator('[data-testid="account-menu-icon"]');
   accountPicker.click();
-  const account = page.locator(`button.mm-box.mm-text.multichain-account-list-item__account-name__button:has-text("${accountName}")`);
-  account.click();
 
-  await page.waitForTimeout(2000);
+  await page
+    .locator('button.mm-box.mm-text.multichain-account-list-item__account-name__button')
+    .filter({ hasText: new RegExp(`^${accountName}$`) })
+    .click();
+  await page.waitForTimeout(1000);
 }
 
 export const connectWallet = async (context: BrowserContext): Promise<void> => {

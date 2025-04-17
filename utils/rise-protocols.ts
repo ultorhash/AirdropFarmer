@@ -1,49 +1,55 @@
 import { BrowserContext } from "playwright";
 import { confirmTx, connectWallet } from "./metamask";
 
-export const gaspump = async (context: BrowserContext, min: number, max: number): Promise<void> => {
-  const page = await context.newPage();
-  page.goto("https://gaspump.network");
-  await page.waitForLoadState('domcontentloaded');
+export const gaspump = async (
+  context: BrowserContext,
+  account: string,
+  min: number,
+  max: number
+): Promise<void> => {
+  try {
+    const page = await context.newPage();
+    page.goto("https://gaspump.network");
+    await page.waitForLoadState('domcontentloaded');
 
-  page.locator('text="Connect a wallet"').click();
-  page.locator('text="MetaMask"').click();
+    page.locator('text="Connect a wallet"').click();
+    page.locator('text="MetaMask"').click();
 
-  await connectWallet(context);
+    await connectWallet(context);
 
-  await page.mouse.click(100, 200);
-  await page.locator('[data-testid="swap-select-token-btn"]').first().click();
-  await page.locator('[data-testid="token-picker-item"]').filter({
-    has: page.locator('div:nth-child(2)', { hasText: /^Ether$/ })
-  }).first().click();
+    await page.mouse.click(100, 200);
+    await page.locator('[data-testid="swap-select-token-btn"]').first().click();
+    await page.locator('[data-testid="token-picker-item"]').filter({
+      has: page.locator('div:nth-child(2)', { hasText: /^Ether$/ })
+    }).first().click();
 
-  await page.waitForTimeout(2000);
+    await page.waitForTimeout(500);
 
-  await page.locator('[data-testid="swap-select-token-btn"]').nth(1).click();
-  await page.locator('[data-testid="token-picker-item"]').filter({
-    has: page.locator('div:nth-child(2)', { hasText: /^WETH$/ })
-  }).first().click();
+    await page.locator('[data-testid="swap-select-token-btn"]').nth(1).click();
+    await page.locator('[data-testid="token-picker-item"]').filter({
+      has: page.locator('div:nth-child(2)', { hasText: /^WETH$/ })
+    }).first().click();
 
-  await page.waitForTimeout(500);
+    await page.waitForTimeout(500);
 
-  const amount = (Math.random() * (max - min) + min).toFixed(6);
-  await page.locator('.base-Input-input').first().fill(amount);
+    const amount = (Math.random() * (max - min) + min).toFixed(6);
+    await page.locator('.base-Input-input').first().fill(amount);
 
-  const swapBtn = page.locator('[data-testid="swap-review-btn"]');
-  await page.waitForFunction((el) => {
-    return !el.classList.contains('base--disabled');
-  }, await swapBtn.elementHandle());
+    const swapBtn = page.locator('[data-testid="swap-review-btn"]');
+    await page.waitForFunction((el) => {
+      return !el.classList.contains('base--disabled');
+    }, await swapBtn.elementHandle());
 
-  await swapBtn.click();
-  await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
+    await swapBtn.click();
+    await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
 
-  await confirmTx(context);
-
-  await page.locator('text="1 pending..."').click();
-  await page.locator('[data-testid="DisconnectIcon"]').click();
-
-  await page.waitForTimeout(1000);
-  await page.close();
+    await confirmTx(context);
+    await page.close();
+  
+    console.log("\x1b[32m", account, "gaspump success", "\x1b[0m");
+  } catch (error: unknown) {
+    console.log("\x1b[31m", account, "gaspump error", "\x1b[0m");
+  }
 }
 
 // DEPRECATED
