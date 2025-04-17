@@ -52,102 +52,81 @@ export const gaspump = async (
   }
 }
 
-// DEPRECATED
-export const clober = async (context: BrowserContext, min: number, max: number) => {
-  const page = await context.newPage();
-  page.goto("https://rise.clober.io/trade?chain=11155931");
-  await page.waitForLoadState('domcontentloaded');
+export const clober = async (context: BrowserContext, account: string, min: number, max: number) => {
+  try {
+    const page = await context.newPage();
+    page.goto("https://rise.clober.io/trade?chain=11155931");
+    await page.waitForLoadState('domcontentloaded');
 
-  page.locator('button:has-text("Connect")').first().click();
-  page.locator('text="MetaMask"').click();
+    page.locator('button:has-text("Connect")').first().click();
+    page.locator('text="MetaMask"').click();
 
-  const [connectPopup] = await Promise.all([
-    context.waitForEvent('page')
-  ]);
+    await connectWallet(context);
 
-  await connectPopup.waitForLoadState('domcontentloaded');
-  const connect = await connectPopup.waitForSelector('[data-testid="confirm-btn"]');
-  connect.click();
+    await page.locator('button:has-text("Select token")').first().click();
+    await page.locator('button:has(div.text-white:has-text("cUSDC"))').first().click();
 
-  await connectPopup.waitForEvent('close');
+    const amount = (Math.random() * (max - min) + min).toFixed(6);
+    await page.locator('input.flex-1').first().fill(amount);
 
-  const amount = (Math.random() * (max - min) + min).toFixed(6);
-  page.locator('input.flex-1').first().fill(amount);
-  const swapBtn = page.locator('button:has-text("Swap")').nth(2);
-  await swapBtn.waitFor({ state: 'visible' });
-  swapBtn.click();
+    const swapBtn = page.locator('button:has-text("Swap")').nth(2);
+    await swapBtn.waitFor({ state: 'visible' });
+    swapBtn.click();
 
-  const [txPopup] = await Promise.all([
-    context.waitForEvent('page')
-  ]);
+    await confirmTx(context);
+    await page.close();
 
-  await txPopup.waitForLoadState('domcontentloaded');
-  const approve = await txPopup.waitForSelector('[data-testid="confirm-footer-button"]');
-  approve.click();
-
-  page.locator('button.group').locator('text=0x').click();
-  await page.locator('button.p-1.sm\\:p-2.bg-gray-700.rounded-lg.flex.flex-col.items-center.justify-center.w-6.sm\\:w-8.h-6.sm\\:h-8 svg path[fill="#EF4444"]').click();
-
-  await page.waitForTimeout(1000);
-  await page.close();
+    console.log("\x1b[32m", account, "clober success", "\x1b[0m");
+  } catch (error: unknown) {
+    console.log("\x1b[31m", account, "clober error", "\x1b[0m");
+  }
 }
 
-export const inarifi = async (context: BrowserContext, min: number, max: number) => {
-  const page = await context.newPage();
-  page.goto("https://www.inarifi.com/?marketName=proto_inari_rise");
-  await page.waitForLoadState('domcontentloaded');
+export const inarifi = async (context: BrowserContext, account: string, min: number, max: number) => {
+  try {
+    const page = await context.newPage();
+    page.goto("https://www.inarifi.com/?marketName=proto_inari_rise");
+    await page.waitForLoadState('domcontentloaded');
 
-  await page.locator('a[href*="/markets"]').click();
-  await page.locator('a[href*="/reserve-overview/?underlyingAsset=0x4200000000000000000000000000000000000006&marketName=proto_inari_rise"]').click();
-  await page.locator('button:has-text("Accept and Connect")').click();
-  await page.locator('button:has-text("Browser wallet")').first().click({ force: true });
+    await page.locator('a[href*="/markets"]').click();
+    await page.locator('a[href*="/reserve-overview/?underlyingAsset=0x4200000000000000000000000000000000000006&marketName=proto_inari_rise"]').click();
+    await page.locator('button:has-text("Accept and Connect")').click();
+    await page.locator('button:has-text("Browser wallet")').first().click({ force: true });
 
-  const [connectPopup] = await Promise.all([
-    context.waitForEvent('page')
-  ]);
+    await connectWallet(context);
 
-  await connectPopup.waitForLoadState('domcontentloaded');
-  const connect = await connectPopup.waitForSelector('[data-testid="confirm-btn"]');
-  connect.click();
+    await page.locator('[data-cy="supplyButton"]').click();
+    const amount = (Math.random() * (max - min) + min).toFixed(6);
+    await page.locator('input[aria-label="amount input"]').fill(amount);
 
-  await connectPopup.waitForEvent('close');
+    const approveBtn = await page.waitForSelector('[data-cy="approvalButton"]', {
+      timeout: 4000,
+      state: 'visible'
+    }).catch(() => null);
 
-  await page.locator('[data-cy="supplyButton"]').click();
-  const amount = (Math.random() * (max - min) + min).toFixed(6);
-  await page.locator('input[aria-label="amount input"]').fill(amount);
+    const supplyBtn = page.locator('[data-cy="actionButton"]');
 
-  const approvalButton = await page.waitForSelector('[data-cy="approvalButton"]', {
-    timeout: 4000,
-    state: 'visible'
-  }).catch(() => null);
+    if (approveBtn) {
+      await page.locator('[data-cy="approvalButton"]').click();
+      await confirmTx(context);
+      await page.mouse.click(100, 200);
+      await page.waitForTimeout(6000);
 
-  if (approvalButton) {
-    await page.locator('[data-cy="approvalButton"]').click();
-    const [spendingCapPopup] = await Promise.all([
-      context.waitForEvent('page')
-    ]);
+      await page.locator('[data-cy="supplyButton"]').click();
+      await page.locator('input[aria-label="amount input"]').fill("0.00002");
 
-    await spendingCapPopup.waitForLoadState('domcontentloaded');
-    const spendingCap = await spendingCapPopup.waitForSelector('[data-testid="confirm-footer-button"]');
-    spendingCap.click();
-    await spendingCapPopup.waitForEvent('close');
+      await page.waitForFunction(() => {
+        const btn = document.querySelector('[data-cy="actionButton"]');
+        return btn && !btn.hasAttribute('disabled');
+      });
+    }
 
-    await page.mouse.click(100, 200);
-    await page.waitForTimeout(5000);
+    await supplyBtn.click();
+    await confirmTx(context);
+    await page.close();
+
+    console.log("\x1b[32m", account, "inarifi success", "\x1b[0m");
+  } catch (error: unknown) {
+    console.log("\x1b[31m", account, "inarifi error", "\x1b[0m");
   }
-
-  await page.locator('[data-cy="supplyButton"]').click();
-  await page.locator('input[aria-label="amount input"]').fill(amount);
-
-  await page.locator('[data-cy="actionButton"]').click();
-  const [depositPopup] = await Promise.all([
-    context.waitForEvent('page')
-  ]);
-
-  await depositPopup.waitForLoadState('domcontentloaded');
-  const deposit = await depositPopup.waitForSelector('[data-testid="confirm-footer-button"]');
-  deposit.click();
-
-  await page.waitForTimeout(1000);
-  await page.close();
 }

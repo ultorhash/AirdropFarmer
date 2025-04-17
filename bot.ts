@@ -1,7 +1,7 @@
 import { loadExtension } from "./utils/setup";
 import { createWallet, addAndSwitchToTestnetNetwork, selectAccount } from "./utils/metamask";
 import { Network } from "./types";
-import { gaspump } from "./utils/rise-protocols";
+import { clober, gaspump, inarifi } from "./utils/rise-protocols";
 
 const seed = ["stomach", "focus", "ostrich", "thank", "hundred", "fuel", "flower", "boss", "sure", "boy", "riot", "figure"];
 const password = "Test123#bwGv23%!";
@@ -20,10 +20,8 @@ const rise: Network = {
   symbol: "ETH"
 }
 
-const steps = async (seed: string[], password: string) => {
-  const numberOfAccounts = 3;
-
-  for (let i = 2; i <= numberOfAccounts; i++) {
+const steps = async (seed: string[], password: string, startIndex: number, endIndex: number): Promise<void> => {
+  for (let i = startIndex; i <= endIndex; i++) {
     const account = `Account ${i}`;
     const { context, page } = await loadExtension(false);
 
@@ -31,7 +29,7 @@ const steps = async (seed: string[], password: string) => {
     await addAndSwitchToTestnetNetwork(page, rise);
     await selectAccount(page, account);
 
-    await gaspump(context, account, 0.00003, 0.00005);
+    await inarifi(context, account, 0.00002, 0.00007);
   
     context.close();
   }
@@ -39,7 +37,7 @@ const steps = async (seed: string[], password: string) => {
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(seed, password)
+    steps(seed, password, 17, 17)
   ]);
 };
 
