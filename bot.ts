@@ -23,13 +23,13 @@ const rise: Network = {
 const steps = async (seed: string[], password: string, startIndex: number, endIndex: number): Promise<void> => {
   for (let i = startIndex; i <= endIndex; i++) {
     const account = `Account ${i}`;
-    const { context, page } = await loadExtension(false);
+    const { context, page } = await loadExtension(true);
 
     await createWallet(page, seed, password);
     await addAndSwitchToTestnetNetwork(page, rise);
     await selectAccount(page, account);
 
-    await inarifi(context, account, 0.00002, 0.00007);
+    await gaspump(context, account, 0.00006, 0.00008);
   
     context.close();
   }
@@ -37,7 +37,7 @@ const steps = async (seed: string[], password: string, startIndex: number, endIn
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(seed, password, 17, 17)
+    steps(seed, password, 26, 40)
   ]);
 };
 
