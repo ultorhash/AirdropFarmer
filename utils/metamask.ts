@@ -1,107 +1,59 @@
-import { BrowserContext, Page } from "playwright";
-import { Network } from "../types";
+import { BrowserContext, chromium } from "playwright";
 
-export const createWallet = async (
-  page: Page,
-  seed: string[],
-  password: string
-): Promise<void> => {
-  const checkbox = await page.waitForSelector('[data-testid="onboarding-terms-checkbox"]');
-  checkbox.click();
+export const loadAndSelectAccount = async (password: string, account: string): Promise<BrowserContext> => {
+  const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
+  const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
 
-  page.locator('[data-testid="onboarding-import-wallet"]').click();
-  page.locator('[data-testid="metametrics-no-thanks"]').click();
+  const browserContext = await chromium.launchPersistentContext(userDataDir, {
+    executablePath: bravePath,
+    headless: false,
+    ignoreDefaultArgs: true,
+    args: [
+      '--profile-directory=Profile 5',
+      '--remote-debugging-pipe'
+    ]
+  });
 
-  for (let i = 0; i < seed.length; i++) {
-    const selector = `[data-testid="import-srp__srp-word-${i}"]`;
-    await page.locator(selector).fill(seed[i]);
-  }
-
-  page.locator('[data-testid="import-srp-confirm"]').click();
-
-  const newPasswordInput = page.locator('[data-testid="create-password-new"]');
-  const confirmPasswordInput = page.locator('[data-testid="create-password-confirm"]');
-
-  await newPasswordInput.fill(password);
-  await confirmPasswordInput.fill(password);
-
-  page.locator('[data-testid="create-password-terms"]').click();
-  page.locator('[data-testid="create-password-import"]').click();
-  page.locator('[data-testid="onboarding-complete-done"]').click();
-
-  page.locator('[data-testid="pin-extension-next"]').click();
-  page.locator('[data-testid="pin-extension-done"]').click();
-}
-
-export const switchToTestnetNetwork = async (page: Page, name: string): Promise<void> => {
-  page.locator('[data-testid="network-display"]').click();
-  const div = page.locator('.multichain-network-list-menu');
-
-  const box = await div.boundingBox();
-  await page.mouse.wheel(0, box.height);
-
-  const toggle = page.locator('input[type="checkbox"]');
-  await toggle.check({ force: true });
-
-  const testnetNetworks = page.locator(`[data-testid="${name}"]`);
-  testnetNetworks.click();
-}
-
-export const addAndSwitchToTestnetNetwork = async (page: Page, network: Network): Promise<void> => {
-  page.locator('[data-testid="network-display"]').click();
-  page.locator('text="Add a custom network"').click();
-
-  const networkName = page.locator('[data-testid="network-form-network-name"]');
-
-  await networkName.fill(network.name);
-
-  page.locator('[data-testid="test-add-rpc-drop-down"]').click();
-  page.locator('text="Add RPC URL"').click();
-
-  const rpcUrl = page.locator('[data-testid="rpc-url-input-test"]');
-  await rpcUrl.fill(network.rpcUrl);
-  
-  page.locator('text="Add URL"').click();
-
-  const chainId = page.locator('[data-testid="network-form-chain-id"]');
-  await chainId.fill(network.chainId.toString());
-
-  const symbol = page.locator('[data-testid="network-form-ticker-input"]');
-  await symbol.fill(network.symbol);
-
-  await page.locator('.networks-tab__network-form__footer button').click();
-
-  await page.locator('[data-testid="network-display"]').click();
-  await page.locator(`[data-testid="${network.name}"]`).click();
-  await page.waitForTimeout(1000);
-}
-
-export const selectAccount = async (page: Page, accountName: string): Promise<void> => {
-  const accountPicker = page.locator('[data-testid="account-menu-icon"]');
-  accountPicker.click();
+  const [page] = browserContext.pages();
+  await page.goto('chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/home.html#');
+  await page.locator('[data-testid="unlock-password"]').fill(password); 
+  await page.locator('[data-testid="unlock-submit"]').click();
+  await page.locator('[data-testid="account-menu-icon"]').click();
 
   await page
     .locator('button.mm-box.mm-text.multichain-account-list-item__account-name__button')
-    .filter({ hasText: new RegExp(`^${accountName}$`) })
+    .filter({ hasText: new RegExp(`^${account}$`) })
     .click();
 
+  await page.waitForTimeout(500);
+
+  return browserContext;
+}
+
+export const disconnectAccountFromApps = async (context: BrowserContext, account: string): Promise<void> => {
+  const [page] = context.pages();
+
+  await page.locator('[data-testid="account-options-menu-button"]').click();
+  await page.waitForTimeout(300);
+  await page.locator('[data-testid="global-menu-connected-sites"]').click();
+  await page.waitForTimeout(300);
+
+  while (await page.locator('[data-testid="connection-list-item"]').count() > 0) {
+    await page.locator('[data-testid="connection-list-item"]').first().click();
+    await page.locator('[data-test-id="disconnect-all"]').click();
+    await page.locator('[data-testid="disconnect-all"]').click();
+    await page.waitForTimeout(500);
+    await page.click('span[style*="arrow-left.svg"]');
+  }
+
+  const hasDisconnected = await page
+    .locator('[data-testid="no-connections"] p')
+    .locator('text=Nothing to see here')
+    .isVisible();
+
+  if (!hasDisconnected) {
+    throw new Error(`${account} has not been disconnected from all apps!`);
+  }
+
   await page.waitForTimeout(1000);
-}
-
-export const connectWallet = async (context: BrowserContext): Promise<void> => {
-  const connectPopup = await context.waitForEvent('page');
-
-  await connectPopup.waitForLoadState('domcontentloaded');
-  await connectPopup.locator('[data-testid="confirm-btn"]').click();
-  await connectPopup.waitForEvent('close');
-}
-
-export const confirmTx = async (context: BrowserContext): Promise<void> => {
-  const txPopup = await context.waitForEvent('page');
-
-  await txPopup.waitForLoadState('domcontentloaded');
-  const approve = await txPopup.waitForSelector('[data-testid="confirm-footer-button"]');
-  approve.click();
-
-  await txPopup.waitForEvent('close');
 }

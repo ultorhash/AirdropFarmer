@@ -1,10 +1,9 @@
-import { loadExtension } from "./utils/setup";
-import { createWallet, addAndSwitchToTestnetNetwork, selectAccount } from "./utils/metamask";
 import { Network } from "./types";
 import { clober, gaspump, inarifi } from "./utils/rise-protocols";
+import { disconnectAccountFromApps, loadAndSelectAccount } from "./utils/metamask";
 
 const seed = ["stomach", "focus", "ostrich", "thank", "hundred", "fuel", "flower", "boss", "sure", "boy", "riot", "figure"];
-const password = "Test123#bwGv23%!";
+const password = "!Stolica34!";
 
 const botanix: Network = {
   name: "Botanix Testnet",
@@ -20,24 +19,22 @@ const rise: Network = {
   symbol: "ETH"
 }
 
-const steps = async (seed: string[], password: string, startIndex: number, endIndex: number): Promise<void> => {
-  for (let i = startIndex; i <= endIndex; i++) {
+const steps = async (password: string, fromAccount: number, toAccount: number): Promise<void> => {
+  for (let i = fromAccount; i <= toAccount; i++) {
     const account = `Account ${i}`;
-    const { context, page } = await loadExtension(true);
+    const context = await loadAndSelectAccount(password, account);
 
-    await createWallet(page, seed, password);
-    await addAndSwitchToTestnetNetwork(page, rise);
-    await selectAccount(page, account);
+    await disconnectAccountFromApps(context, account);
+    //await gaspump(context, account, 0.00005, 0.00008);
+    await clober(context, account, 0.00004, 0.00007);
 
-    await gaspump(context, account, 0.00005, 0.00008);
-
-    context.close();
+    await context.close();
   }
 }
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(seed, password, 11, 20)
+    steps(password, 18, 19)
   ]);
 };
 

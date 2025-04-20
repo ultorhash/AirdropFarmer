@@ -1,5 +1,5 @@
 import { BrowserContext } from "playwright";
-import { confirmTx, connectWallet } from "./metamask";
+import { confirmTx, connectWallet } from "./metamask-manual";
 
 export const gaspump = async (
   context: BrowserContext,
@@ -12,18 +12,19 @@ export const gaspump = async (
     page.goto("https://gaspump.network");
     await page.waitForLoadState('domcontentloaded');
 
-    page.locator('text="Connect a wallet"').click();
-    page.locator('text="MetaMask"').click();
+    await page.locator('text="Connect a wallet"').click();
+    await page.locator('text="MetaMask"').click();
 
     await connectWallet(context);
 
     await page.mouse.click(100, 200);
+    //await page.waitForSelector('[data-testid="LoadingIcon"]', { state: 'detached' });
     await page.locator('[data-testid="swap-select-token-btn"]').first().click();
     await page.locator('[data-testid="token-picker-item"]').filter({
       has: page.locator('div:nth-child(2)', { hasText: /^Ether$/ })
     }).first().click();
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1500);
 
     await page.locator('[data-testid="swap-select-token-btn"]').nth(1).click();
     await page.locator('[data-testid="token-picker-item"]').filter({
@@ -44,6 +45,10 @@ export const gaspump = async (
     await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
 
     await confirmTx(context);
+    await page.locator('text=pending...').click();
+    await page.locator('[data-testid="DisconnectIcon"]').click();
+
+    await context.clearCookies();
     await page.close();
   
     console.log("\x1b[32m", account, "gaspump success", "\x1b[0m");
@@ -55,11 +60,11 @@ export const gaspump = async (
 export const clober = async (context: BrowserContext, account: string, min: number, max: number) => {
   try {
     const page = await context.newPage();
-    page.goto("https://rise.clober.io/trade?chain=11155931");
+    await page.goto("https://rise.clober.io/trade?chain=11155931");
     await page.waitForLoadState('domcontentloaded');
 
-    page.locator('button:has-text("Connect")').first().click();
-    page.locator('text="MetaMask"').click();
+    await page.locator('button:has-text("Connect")').first().click();
+    await page.locator('text="MetaMask"').click();
 
     await connectWallet(context);
 
@@ -74,6 +79,9 @@ export const clober = async (context: BrowserContext, account: string, min: numb
     swapBtn.click();
 
     await confirmTx(context);
+    await context.clearCookies();
+    await context.clearPermissions();
+    await page.evaluate(() => localStorage.clear());
     await page.close();
 
     console.log("\x1b[32m", account, "clober success", "\x1b[0m");
