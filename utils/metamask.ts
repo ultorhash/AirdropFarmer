@@ -73,6 +73,7 @@ export const addAndSwitchToTestnetNetwork = async (page: Page, network: Network)
 
   await page.locator('[data-testid="network-display"]').click();
   await page.locator(`[data-testid="${network.name}"]`).click();
+  await page.waitForTimeout(1000);
 }
 
 export const selectAccount = async (page: Page, accountName: string): Promise<void> => {
@@ -83,6 +84,7 @@ export const selectAccount = async (page: Page, accountName: string): Promise<vo
     .locator('button.mm-box.mm-text.multichain-account-list-item__account-name__button')
     .filter({ hasText: new RegExp(`^${accountName}$`) })
     .click();
+
   await page.waitForTimeout(1000);
 }
 

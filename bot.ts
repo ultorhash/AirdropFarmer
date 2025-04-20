@@ -29,15 +29,15 @@ const steps = async (seed: string[], password: string, startIndex: number, endIn
     await addAndSwitchToTestnetNetwork(page, rise);
     await selectAccount(page, account);
 
-    await gaspump(context, account, 0.00006, 0.00008);
-  
+    await gaspump(context, account, 0.00005, 0.00008);
+
     context.close();
   }
 }
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(seed, password, 26, 40)
+    steps(seed, password, 11, 20)
   ]);
 };
 
