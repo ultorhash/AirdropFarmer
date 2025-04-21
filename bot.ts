@@ -1,6 +1,6 @@
 import { Network } from "./types";
 import { clober, gaspump, inarifi } from "./utils/rise-protocols";
-import { disconnectAccountFromApps, loadAndSelectAccount } from "./utils/metamask";
+import { disconnectAccountFromApps, login, switchAccount } from "./utils/metamask";
 
 const seed = ["stomach", "focus", "ostrich", "thank", "hundred", "fuel", "flower", "boss", "sure", "boy", "riot", "figure"];
 const password = "!Stolica34!";
@@ -20,21 +20,22 @@ const rise: Network = {
 }
 
 const steps = async (password: string, fromAccount: number, toAccount: number): Promise<void> => {
+  const { context, page } = await login(password);
+
   for (let i = fromAccount; i <= toAccount; i++) {
     const account = `Account ${i}`;
-    const context = await loadAndSelectAccount(password, account);
-
+    
+    await switchAccount(page, account);
+    await clober(context, account, 0.00003, 0.00005);
     await disconnectAccountFromApps(context, account);
-    //await gaspump(context, account, 0.00005, 0.00008);
-    await clober(context, account, 0.00004, 0.00007);
-
-    await context.close();
   }
+
+  await context.close();
 }
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 18, 19)
+    steps(password, 7, 20)
   ]);
 };
 

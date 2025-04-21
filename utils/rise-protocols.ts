@@ -61,27 +61,40 @@ export const clober = async (context: BrowserContext, account: string, min: numb
   try {
     const page = await context.newPage();
     await page.goto("https://rise.clober.io/trade?chain=11155931");
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
     await page.locator('button:has-text("Connect")').first().click();
     await page.locator('text="MetaMask"').click();
 
     await connectWallet(context);
 
-    await page.locator('button:has-text("Select token")').first().click();
-    await page.locator('button:has(div.text-white:has-text("cUSDC"))').first().click();
-
     const amount = (Math.random() * (max - min) + min).toFixed(6);
     await page.locator('input.flex-1').first().fill(amount);
+
+    const isSelectToken = await page
+      .locator('button.h-8.flex.items-center.rounded-full.bg-blue-500.text-white.font-semibold.pl-3.pr-2.py-1.gap-2.text-sm')
+      .count()
+
+    if (isSelectToken > 0) {
+      await page.locator('button:has-text("Select token")').first().click();
+      await page.locator('button:has(div.text-white:has-text("cUSDC"))').first().click();
+    }
 
     const swapBtn = page.locator('button:has-text("Swap")').nth(2);
     await swapBtn.waitFor({ state: 'visible' });
     swapBtn.click();
 
     await confirmTx(context);
+
+    await page.evaluate(() => {
+      localStorage.clear()
+      sessionStorage.clear();
+      indexedDB.databases().then((dbs: IDBDatabaseInfo[]) => dbs.forEach(db => indexedDB.deleteDatabase(db.name)));
+      caches.keys().then((names) => names.forEach(name => caches.delete(name)));
+    });
     await context.clearCookies();
     await context.clearPermissions();
-    await page.evaluate(() => localStorage.clear());
+
     await page.close();
 
     console.log("\x1b[32m", account, "clober success", "\x1b[0m");

@@ -1,12 +1,11 @@
-import { BrowserContext, chromium } from "playwright";
+import { BrowserContext, chromium, Page } from "playwright";
 
-export const loadAndSelectAccount = async (password: string, account: string): Promise<BrowserContext> => {
+export const login = async (password: string): Promise<{ context: BrowserContext, page: Page }> => {
   const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
 
-  const browserContext = await chromium.launchPersistentContext(userDataDir, {
+  const context = await chromium.launchPersistentContext(userDataDir, {
     executablePath: bravePath,
-    headless: false,
     ignoreDefaultArgs: true,
     args: [
       '--profile-directory=Profile 5',
@@ -14,20 +13,27 @@ export const loadAndSelectAccount = async (password: string, account: string): P
     ]
   });
 
-  const [page] = browserContext.pages();
+  const [page] = context.pages();
   await page.goto('chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/home.html#');
   await page.locator('[data-testid="unlock-password"]').fill(password); 
   await page.locator('[data-testid="unlock-submit"]').click();
-  await page.locator('[data-testid="account-menu-icon"]').click();
+  
+  try {
+    await page.locator('div.spinner.loading-overlay__spinner').waitFor({ state: 'hidden', timeout: 5000 });
+  } catch (error: unknown) {
+    throw new Error(`Unable to connect to the network`);
+  }
 
+  return { context, page };
+}
+
+export const switchAccount = async (page: Page, account: string): Promise<void> => {
+  await page.locator('[data-testid="account-menu-icon"]').click();
   await page
     .locator('button.mm-box.mm-text.multichain-account-list-item__account-name__button')
     .filter({ hasText: new RegExp(`^${account}$`) })
     .click();
-
   await page.waitForTimeout(500);
-
-  return browserContext;
 }
 
 export const disconnectAccountFromApps = async (context: BrowserContext, account: string): Promise<void> => {
@@ -55,5 +61,6 @@ export const disconnectAccountFromApps = async (context: BrowserContext, account
     throw new Error(`${account} has not been disconnected from all apps!`);
   }
 
+  await page.click('span[style*="arrow-left.svg"]');
   await page.waitForTimeout(1000);
 }
