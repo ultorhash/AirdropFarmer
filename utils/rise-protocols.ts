@@ -1,5 +1,7 @@
 import { BrowserContext } from "playwright";
 import { confirmTx, connectWallet } from "./metamask-manual";
+import { clearActivity } from "./helpers";
+import { Logger } from "./logger";
 
 export const gaspump = async (
   context: BrowserContext,
@@ -85,21 +87,12 @@ export const clober = async (context: BrowserContext, account: string, min: numb
     swapBtn.click();
 
     await confirmTx(context);
-
-    await page.evaluate(() => {
-      localStorage.clear()
-      sessionStorage.clear();
-      indexedDB.databases().then((dbs: IDBDatabaseInfo[]) => dbs.forEach(db => indexedDB.deleteDatabase(db.name)));
-      caches.keys().then((names) => names.forEach(name => caches.delete(name)));
-    });
-    await context.clearCookies();
-    await context.clearPermissions();
-
+    await clearActivity(context, page);
     await page.close();
 
-    console.log("\x1b[32m", account, "clober success", "\x1b[0m");
+    Logger.ok(account, "clober");
   } catch (error: unknown) {
-    console.log("\x1b[31m", account, "clober error", "\x1b[0m");
+    Logger.error(account, "clober");
   }
 }
 

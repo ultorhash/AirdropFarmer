@@ -35,7 +35,7 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 7, 20)
+    steps(password, 21, 30)
   ]);
 };
 
