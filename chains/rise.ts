@@ -1,7 +1,6 @@
 import { BrowserContext } from "playwright";
-import { confirmTx, connectWallet } from "./metamask-manual";
-import { clearActivity } from "./helpers";
-import { Logger } from "./logger";
+import { clearActivity, confirmTx, connectWallet } from "../helpers";
+import { Logger } from "../utils/logger";
 
 export const gaspump = async (
   context: BrowserContext,
