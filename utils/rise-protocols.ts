@@ -100,7 +100,7 @@ export const inarifi = async (context: BrowserContext, account: string, min: num
   try {
     const page = await context.newPage();
     page.goto("https://www.inarifi.com/?marketName=proto_inari_rise");
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
 
     await page.locator('a[href*="/markets"]').click();
     await page.locator('a[href*="/reserve-overview/?underlyingAsset=0x4200000000000000000000000000000000000006&marketName=proto_inari_rise"]').click();
@@ -137,10 +137,11 @@ export const inarifi = async (context: BrowserContext, account: string, min: num
 
     await supplyBtn.click();
     await confirmTx(context);
+    await clearActivity(context, page);
     await page.close();
 
-    console.log("\x1b[32m", account, "inarifi success", "\x1b[0m");
+    Logger.ok(account, "inafiri");
   } catch (error: unknown) {
-    console.log("\x1b[31m", account, "inarifi error", "\x1b[0m");
+    Logger.error(account, "inafiri");
   }
 }
