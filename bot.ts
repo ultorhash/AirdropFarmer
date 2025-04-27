@@ -1,4 +1,4 @@
-import { hammyFinance } from "./chains/xrpl-evm";
+import { hammyFinance, moaiFinance } from "./chains/xrpl-evm";
 import { login, switchAccount } from "./utils/metamask";
 
 const password = "!Stolica34!";
@@ -10,7 +10,8 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
     const account = `Account ${i}`;
     
     await switchAccount(page, account);
-    await hammyFinance(context, account, 1, 3);
+    //await hammyFinance(context, account, 1, 3);
+    await moaiFinance(context, account, 1, 3);
   }
 
   await context.close();
@@ -18,7 +19,7 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 1, 20)
+    steps(password, 2, 20)
   ]);
 };
 

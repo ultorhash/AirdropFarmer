@@ -1,5 +1,5 @@
 import { BrowserContext } from "playwright";
-import { confirmTx } from "../helpers";
+import { confirmTx, connectWallet } from "../helpers";
 import { Logger } from "../utils/logger";
 
 export const hammyFinance = async (
@@ -39,5 +39,51 @@ export const hammyFinance = async (
 
   } catch (err: unknown) {
     Logger.error(account, "hammy finance");
+  }
+}
+
+export const moaiFinance = async (
+  context: BrowserContext,
+  account: string,
+  min: number,
+  max: number
+): Promise<void> => {
+  try {
+    const page = await context.newPage();
+    await page.goto("https://xrplevm.moai-finance.xyz/swap");
+    await page.waitForLoadState('networkidle');
+
+    // INVESTIGATE: Need to connect wallet every session regardless being connected previously
+    // await page.locator('button').filter({ hasText: /^Connect Wallet$/ }).first().click();
+    // await page.locator('button:has-text("Browser wallet")').first().click({ force: true });
+    // await page.locator('text="MetaMask"').click();
+
+    // await connectWallet(context);
+
+    // No approval, swap XRP to RLUSD
+    const amount = (Math.random() * (max - min) + min).toFixed(2);
+    await page.locator('input.mantine-Input-input').first().fill(amount);
+
+    //await page.locator('[data-button="true"]').last().scrollIntoViewIfNeeded();
+    const swapButton = page.locator('[data-button="true"]').last();
+    await swapButton.waitFor({ state: 'visible' });
+    await swapButton.click();
+    //
+
+    // Approve high price impact
+    await page.locator('input[type="checkbox"]').click();
+    await page.locator('span:has-text("Swap anyway")').click();
+    //
+
+    await confirmTx(context);
+
+    // const btns = await page.locator('div.token-button').nth(1).click();
+    // console.log(btns); // 2
+
+    Logger.ok(account, "moai finance");
+    await page.close();
+
+  } catch (err: unknown) {
+    Logger.error(account, "moai finance");
   }
 }
