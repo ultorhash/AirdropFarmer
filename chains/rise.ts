@@ -11,45 +11,19 @@ export const gaspump = async (
   try {
     const page = await context.newPage();
     page.goto("https://gaspump.network");
-    await page.waitForLoadState('domcontentloaded');
-
-    await page.locator('text="Connect a wallet"').click();
-    await page.locator('text="MetaMask"').click();
-
-    await connectWallet(context);
-
-    await page.mouse.click(100, 200);
-    //await page.waitForSelector('[data-testid="LoadingIcon"]', { state: 'detached' });
-    await page.locator('[data-testid="swap-select-token-btn"]').first().click();
-    await page.locator('[data-testid="token-picker-item"]').filter({
-      has: page.locator('div:nth-child(2)', { hasText: /^Ether$/ })
-    }).first().click();
-
-    await page.waitForTimeout(1500);
-
-    await page.locator('[data-testid="swap-select-token-btn"]').nth(1).click();
-    await page.locator('[data-testid="token-picker-item"]').filter({
-      has: page.locator('div:nth-child(2)', { hasText: /^WETH$/ })
-    }).first().click();
-
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle');
 
     const amount = (Math.random() * (max - min) + min).toFixed(6);
     await page.locator('.base-Input-input').first().fill(amount);
 
-    const swapBtn = page.locator('[data-testid="swap-review-btn"]');
-    await page.waitForFunction((el) => {
-      return !el.classList.contains('base--disabled');
-    }, await swapBtn.elementHandle());
-
-    await swapBtn.click();
+    await page.locator('[data-testid="swap-review-btn"]').filter({ hasText: /^Review Swap$/ }).click();
     await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
 
-    await confirmTx(context);
-    await page.locator('text=pending...').click();
-    await page.locator('[data-testid="DisconnectIcon"]').click();
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Confirm tx timeout')), 5000)
+    );
 
-    await context.clearCookies();
+    await Promise.race([confirmTx(context), timeoutPromise]);
     await page.close();
   
     console.log("\x1b[32m", account, "gaspump success", "\x1b[0m");
@@ -58,35 +32,26 @@ export const gaspump = async (
   }
 }
 
-export const clober = async (context: BrowserContext, account: string, min: number, max: number) => {
+export const clober = async (
+  context: BrowserContext,
+  account: string,
+  min: number,
+  max: number
+): Promise<void> => {
   try {
     const page = await context.newPage();
     await page.goto("https://rise.clober.io/trade?chain=11155931");
     await page.waitForLoadState('networkidle');
 
-    await page.locator('button:has-text("Connect")').first().click();
-    await page.locator('text="MetaMask"').click();
-
-    await connectWallet(context);
-
     const amount = (Math.random() * (max - min) + min).toFixed(6);
     await page.locator('input.flex-1').first().fill(amount);
-
-    const isSelectToken = await page
-      .locator('button.h-8.flex.items-center.rounded-full.bg-blue-500.text-white.font-semibold.pl-3.pr-2.py-1.gap-2.text-sm')
-      .count()
-
-    if (isSelectToken > 0) {
-      await page.locator('button:has-text("Select token")').first().click();
-      await page.locator('button:has(div.text-white:has-text("cUSDC"))').first().click();
-    }
 
     const swapBtn = page.locator('button:has-text("Swap")').nth(2);
     await swapBtn.waitFor({ state: 'visible' });
     swapBtn.click();
 
     await confirmTx(context);
-    await clearActivity(context, page);
+    await page.waitForTimeout(5000);
     await page.close();
 
     Logger.ok(account, "clober");

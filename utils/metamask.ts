@@ -19,7 +19,7 @@ export const login = async (password: string): Promise<{ context: BrowserContext
   await page.locator('[data-testid="unlock-submit"]').click();
   
   try {
-    await page.locator('div.spinner.loading-overlay__spinner').waitFor({ state: 'hidden', timeout: 5000 });
+    await page.locator('div.spinner.loading-overlay__spinner').waitFor({ state: 'hidden', timeout: 7000 });
   } catch (error: unknown) {
     throw new Error(`Unable to connect to the network`);
   }
