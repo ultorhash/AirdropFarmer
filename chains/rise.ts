@@ -128,13 +128,14 @@ export const b3x = async (
   context: BrowserContext,
   account: string,
   min: number,
-  max: number,
-  direction: "Long" | "Short"
+  max: number
 ): Promise<void> => {
   try {
     const page = await context.newPage();
     page.goto("https://testnet.b3x.ai/#/trade");
     await page.waitForLoadState('networkidle');
+
+    let tradeType: string;
 
     // Select tokens
     await page.locator('span.Token-symbol-text').first().click();
@@ -143,22 +144,33 @@ export const b3x = async (
     await page.click('img[alt="XRP/USD"]');
     //
 
-    if (direction === "Short") {
+    // Switch from previous trade type E.g. Long -> Short
+    const isLongSelected = await page.locator('div.Tab-option').evaluateAll(el => {
+      return el.some((el: HTMLElement) => el.getAttribute('class')?.includes('active') && el.innerText.includes('Long'));
+    });
+
+    if (isLongSelected) {
       await page.locator('span.boldFont').filter({ hasText: 'Short' }).click();
+      tradeType = "Short";
+
+    } else {
+      await page.locator('span.boldFont').filter({ hasText: 'Long' }).click();
+      tradeType = "Long";
     }
+    //
 
     // Enter the amount and long
     const amount = (Math.random() * (max - min) + min).toFixed(6);
     await page.locator('input.Exchange-swap-input').first().fill(amount);
-    await page.locator('button').filter({ hasText: new RegExp(`^${direction} XRP$`) }).click();
-    await page.locator('button').filter({ hasText: new RegExp(`^${direction}$`) }).click();
+    await page.locator('button').filter({ hasText: new RegExp(`^${tradeType} XRP$`) }).click();
+    await page.locator('button').filter({ hasText: new RegExp(`^${tradeType}$`) }).click();
     //
 
     await confirmTx(context);
     await page.waitForTimeout(2000);
     await page.close();
 
-    Logger.ok(account, "b3x");
+    Logger.ok(account, `b3x [position: ${tradeType}]`);
   } catch (error: unknown) {
     Logger.error(account, "b3x");
   }
