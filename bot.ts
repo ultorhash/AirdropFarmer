@@ -11,7 +11,7 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
     
     await switchAccount(page, account);
     //await gaspump(context, account, 0.00003, 0.00008)
-    await clober(context, account, 0.00005, 0.00007)
+    await clober(context, account, 0.00005, 0.00007, true, false)
   }
 
   await context.close();
@@ -19,7 +19,7 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 30, 60)
+    steps(password, 21, 60)
   ]);
 };
 

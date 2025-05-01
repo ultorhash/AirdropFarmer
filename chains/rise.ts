@@ -1,4 +1,4 @@
-import { BrowserContext } from "playwright";
+import { BrowserContext, Locator } from "playwright";
 import { clearActivity, confirmTx, connectWallet } from "../helpers";
 import { Logger } from "../utils/logger";
 
@@ -36,18 +36,32 @@ export const clober = async (
   context: BrowserContext,
   account: string,
   min: number,
-  max: number
+  max: number,
+  wrap: boolean,
+  unwrap: boolean
 ): Promise<void> => {
   try {
     const page = await context.newPage();
     await page.goto("https://rise.clober.io/trade?chain=11155931");
     await page.waitForLoadState('networkidle');
 
+    let swapBtn: Locator;
     const amount = (Math.random() * (max - min) + min).toFixed(6);
-    await page.locator('input.flex-1').first().fill(amount);
 
-    const swapBtn = page.locator('button:has-text("Swap")').nth(2);
-    await swapBtn.waitFor({ state: 'visible' });
+    if (unwrap) {
+      await page.locator('button').filter({ hasText: /^MAX$/ }).first().click();
+      swapBtn = page.locator('button:has-text("Unwrap")').first();
+      await swapBtn.waitFor({ state: 'visible' });
+    } else if (wrap) {
+      await page.locator('input.flex-1').first().fill(amount);
+      swapBtn = page.locator('button:has-text("Wrap")').first();
+      await swapBtn.waitFor({ state: 'visible' });
+    } else {
+      await page.locator('input.flex-1').first().fill(amount);
+      swapBtn = page.locator('button:has-text("Swap")').nth(2);
+      await swapBtn.waitFor({ state: 'visible' });
+    }
+
     swapBtn.click();
 
     await confirmTx(context);
