@@ -123,3 +123,43 @@ export const inarifi = async (context: BrowserContext, account: string, min: num
     Logger.error(account, "inafiri");
   }
 }
+
+export const b3x = async (
+  context: BrowserContext,
+  account: string,
+  min: number,
+  max: number,
+  direction: "Long" | "Short"
+): Promise<void> => {
+  try {
+    const page = await context.newPage();
+    page.goto("https://testnet.b3x.ai/#/trade");
+    await page.waitForLoadState('networkidle');
+
+    // Select tokens
+    await page.locator('span.Token-symbol-text').first().click();
+    await page.click('img[alt="WSTETH"]');
+    await page.locator('span.Token-symbol-text').nth(1).click();
+    await page.click('img[alt="XRP/USD"]');
+    //
+
+    if (direction === "Short") {
+      await page.locator('span.boldFont').filter({ hasText: 'Short' }).click();
+    }
+
+    // Enter the amount and long
+    const amount = (Math.random() * (max - min) + min).toFixed(6);
+    await page.locator('input.Exchange-swap-input').first().fill(amount);
+    await page.locator('button').filter({ hasText: new RegExp(`^${direction} XRP$`) }).click();
+    await page.locator('button').filter({ hasText: new RegExp(`^${direction}$`) }).click();
+    //
+
+    await confirmTx(context);
+    await page.waitForTimeout(2000);
+    await page.close();
+
+    Logger.ok(account, "b3x");
+  } catch (error: unknown) {
+    Logger.error(account, "b3x");
+  }
+}

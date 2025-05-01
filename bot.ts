@@ -1,4 +1,4 @@
-import { clober, gaspump } from "./chains/rise";
+import { b3x, clober, gaspump } from "./chains/rise";
 import { login, switchAccount } from "./utils/metamask";
 
 const password = "!Stolica34!";
@@ -11,7 +11,8 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
     
     await switchAccount(page, account);
     //await gaspump(context, account, 0.00003, 0.00008)
-    await clober(context, account, 0.00005, 0.00007, true, false)
+    //await clober(context, account, 0.00005, 0.00007, true, false)
+    await b3x(context, account, 0.001, 0.003, "Short");
   }
 
   await context.close();
@@ -19,7 +20,7 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 21, 60)
+    steps(password, 3, 3)
   ]);
 };
 
