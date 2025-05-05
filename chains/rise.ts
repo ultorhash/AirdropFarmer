@@ -19,11 +19,8 @@ export const gaspump = async (
     await page.locator('[data-testid="swap-review-btn"]').filter({ hasText: /^Review Swap$/ }).click();
     await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
 
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Confirm tx timeout')), 5000)
-    );
-
-    await Promise.race([confirmTx(context), timeoutPromise]);
+    await confirmTx(context);
+    await page.waitForTimeout(2000);
     await page.close();
   
     console.log("\x1b[32m", account, "gaspump success", "\x1b[0m");
@@ -40,11 +37,11 @@ export const clober = async (
   wrap: boolean,
   unwrap: boolean
 ): Promise<void> => {
-  try {
-    const page = await context.newPage();
-    await page.goto("https://rise.clober.io/trade?chain=11155931");
-    await page.waitForLoadState('networkidle');
+  const page = await context.newPage();
+  await page.goto("https://rise.clober.io/trade?chain=11155931");
+  await page.waitForLoadState('networkidle');
 
+  try {
     let swapBtn: Locator;
     const amount = (Math.random() * (max - min) + min).toFixed(6);
 
@@ -65,16 +62,33 @@ export const clober = async (
     swapBtn.click();
 
     await confirmTx(context);
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(6000);
     await page.close();
 
     Logger.ok(account, "clober");
   } catch (error: unknown) {
     Logger.error(account, "clober");
+    page.close();
   }
 }
 
-export const inarifi = async (context: BrowserContext, account: string, min: number, max: number) => {
+export const cloberRabby = async (
+  context: BrowserContext,
+  account: string,
+  min: number,
+  max: number
+): Promise<void> => {
+  const page = await context.newPage();
+  await page.goto("https://rise.clober.io/trade?chain=11155931");
+  await page.waitForLoadState('networkidle');
+}
+
+export const inarifi = async (
+  context: BrowserContext,
+  account: string,
+  min: number,
+  max: number
+): Promise<void> => {
   try {
     const page = await context.newPage();
     page.goto("https://www.inarifi.com/?marketName=proto_inari_rise");
