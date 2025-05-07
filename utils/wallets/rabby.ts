@@ -32,11 +32,8 @@ export const rabbySwitchAccount = async (page: Page, account: string): Promise<v
 export const rabbyConfirmTx = async (context: BrowserContext): Promise<void> => {
   const popup = await context.waitForEvent('page');
   await popup.waitForLoadState('domcontentloaded');
-  await popup.waitForTimeout(1000); // Wait for buttons
 
-  const confirmButton = popup.locator('button:has-text("Confirm")');
-  await confirmButton.waitFor({ state: 'visible' }); // FIXME
-  await confirmButton.click();
-
+  await popup.locator('button:has-text("Sign")').click();
+  await popup.locator('button:has-text("Confirm")').click();
   await popup.waitForEvent('close');
 }
