@@ -98,42 +98,37 @@ export const inarifi = async (
     page.goto("https://www.inarifi.com/?marketName=proto_inari_rise");
     await page.waitForLoadState('networkidle');
 
+    // Find asset to deposit
     await page.locator('a[href*="/markets"]').click();
     await page.locator('a[href*="/reserve-overview/?underlyingAsset=0x4200000000000000000000000000000000000006&marketName=proto_inari_rise"]').click();
-    await page.locator('button:has-text("Accept and Connect")').click();
-    await page.locator('button:has-text("Browser wallet")').first().click({ force: true });
 
-    await connectWallet(context);
-
+    // Enter the amount
     await page.locator('[data-cy="supplyButton"]').click();
     const amount = (Math.random() * (max - min) + min).toFixed(6);
     await page.locator('input[aria-label="amount input"]').fill(amount);
 
-    const approveBtn = await page.waitForSelector('[data-cy="approvalButton"]', {
-      timeout: 4000,
-      state: 'visible'
-    }).catch(() => null);
+    // Wait for gas cost estimation
+    await page.waitForFunction(() => !document.querySelector('svg[data-testid="LocalGasStationIcon"] + span[role="progressbar"]'));
 
+    // Check if approval needed
     const supplyBtn = page.locator('[data-cy="actionButton"]');
+    const isSupplyDisabled = await supplyBtn.evaluate(el => el.hasAttribute('disabled'));
 
-    if (approveBtn) {
+    // Approve if needed and deposit again
+    if (isSupplyDisabled) {
       await page.locator('[data-cy="approvalButton"]').click();
-      await confirmTx(context);
-      await page.mouse.click(100, 200);
-      await page.waitForTimeout(6000);
+      await rabbyConfirmTx(context);
+      await page.mouse.click(100, 100);
+      await page.waitForTimeout(4000);
 
       await page.locator('[data-cy="supplyButton"]').click();
-      await page.locator('input[aria-label="amount input"]').fill("0.00002");
+      await page.locator('input[aria-label="amount input"]').fill(amount);
 
-      await page.waitForFunction(() => {
-        const btn = document.querySelector('[data-cy="actionButton"]');
-        return btn && !btn.hasAttribute('disabled');
-      });
+      await page.waitForFunction(() => !document.querySelector('svg[data-testid="LocalGasStationIcon"] + span[role="progressbar"]'));
     }
 
     await supplyBtn.click();
-    await confirmTx(context);
-    await clearActivity(context, page);
+    await rabbyConfirmTx(context);
     await page.close();
 
     Logger.ok(account, "inafiri");
