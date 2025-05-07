@@ -1,27 +1,23 @@
 import { b3x, clober, gaspump, inarifi } from "./chains/rise";
-import { login, switchAccount } from "./utils/metamask";
+import { metamaskLogin, metamaskSwitchAccount } from "./utils/wallets";
 
 const password = "!Stolica34!";
 
 const steps = async (password: string, fromAccount: number, toAccount: number): Promise<void> => {
-  const { context, page } = await login(password);
+  const { context, page } = await metamaskLogin(password);
 
   for (let i = fromAccount; i <= toAccount; i++) {
-    const account = `Account ${i}`;
+    const rabbyAccount = `Account ${i}`;
     
-    await switchAccount(page, account);
-    //await inarifi(context, account, 0.00004, 0.00008);
-    //await gaspump(context, account, 0.00003, 0.00008)
-    //await clober(context, account, 0.00005, 0.00007, true, false);
-    //await b3x(context, account, 0.001, 0.003);
+    await metamaskSwitchAccount(page, rabbyAccount);
   }
 
-  await context.close();
+  // await context.close();
 }
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 1, 3)
+    steps(password, 1, 1)
   ]);
 };
 

@@ -1,6 +1,6 @@
 import { BrowserContext, chromium, Page } from "playwright";
 
-export const login = async (password: string): Promise<{ context: BrowserContext, page: Page }> => {
+export const metamaskLogin = async (password: string): Promise<{ context: BrowserContext, page: Page }> => {
   const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
 
@@ -17,17 +17,11 @@ export const login = async (password: string): Promise<{ context: BrowserContext
   await page.goto('chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/home.html#');
   await page.locator('[data-testid="unlock-password"]').fill(password); 
   await page.locator('[data-testid="unlock-submit"]').click();
-  
-  try {
-    await page.locator('div.spinner.loading-overlay__spinner').waitFor({ state: 'hidden', timeout: 7000 });
-  } catch (error: unknown) {
-    throw new Error(`Unable to connect to the network`);
-  }
 
   return { context, page };
 }
 
-export const switchAccount = async (page: Page, account: string): Promise<void> => {
+export const metamaskSwitchAccount = async (page: Page, account: string): Promise<void> => {
   await page.locator('[data-testid="account-menu-icon"]').click();
   await page
     .locator('button.mm-box.mm-text.multichain-account-list-item__account-name__button')

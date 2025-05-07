@@ -1,6 +1,7 @@
 import { BrowserContext, Locator } from "playwright";
 import { clearActivity, confirmTx, connectWallet } from "../helpers";
 import { Logger } from "../utils/logger";
+import { rabbyConfirmTx } from "../utils/wallets/rabby";
 
 export const gaspump = async (
   context: BrowserContext,
@@ -41,35 +42,58 @@ export const clober = async (
   await page.goto("https://rise.clober.io/trade?chain=11155931");
   await page.waitForLoadState('networkidle');
 
-  try {
-    let swapBtn: Locator;
-    const amount = (Math.random() * (max - min) + min).toFixed(6);
+  let swapBtn: Locator;
+  const amount = (Math.random() * (max - min) + min).toFixed(6);
 
-    if (unwrap) {
-      await page.locator('button').filter({ hasText: /^MAX$/ }).first().click();
-      swapBtn = page.locator('button:has-text("Unwrap")').first();
-      await swapBtn.waitFor({ state: 'visible' });
-    } else if (wrap) {
-      await page.locator('input.flex-1').first().fill(amount);
-      swapBtn = page.locator('button:has-text("Wrap")').first();
-      await swapBtn.waitFor({ state: 'visible' });
-    } else {
-      await page.locator('input.flex-1').first().fill(amount);
-      swapBtn = page.locator('button:has-text("Swap")').nth(2);
-      await swapBtn.waitFor({ state: 'visible' });
-    }
-
-    swapBtn.click();
-
-    await confirmTx(context);
-    await page.waitForTimeout(6000);
-    await page.close();
-
-    Logger.ok(account, "clober");
-  } catch (error: unknown) {
-    Logger.error(account, "clober");
-    page.close();
+  if (unwrap) {
+    await page.locator('button').filter({ hasText: /^MAX$/ }).first().click();
+    swapBtn = page.locator('button:has-text("Unwrap")').first();
+    await swapBtn.waitFor({ state: 'visible' });
+  } else if (wrap) {
+    await page.locator('input.flex-1').first().fill(amount);
+    swapBtn = page.locator('button:has-text("Wrap")').first();
+    await swapBtn.waitFor({ state: 'visible' });
+  } else {
+    await page.locator('input.flex-1').first().fill(amount);
+    swapBtn = page.locator('button:has-text("Swap")').nth(2);
+    await swapBtn.waitFor({ state: 'visible' });
   }
+
+  swapBtn.click();
+
+  await rabbyConfirmTx(context);
+  await page.waitForTimeout(6000);
+  await page.close();
+
+  // try {
+  //   let swapBtn: Locator;
+  //   const amount = (Math.random() * (max - min) + min).toFixed(6);
+
+  //   if (unwrap) {
+  //     await page.locator('button').filter({ hasText: /^MAX$/ }).first().click();
+  //     swapBtn = page.locator('button:has-text("Unwrap")').first();
+  //     await swapBtn.waitFor({ state: 'visible' });
+  //   } else if (wrap) {
+  //     await page.locator('input.flex-1').first().fill(amount);
+  //     swapBtn = page.locator('button:has-text("Wrap")').first();
+  //     await swapBtn.waitFor({ state: 'visible' });
+  //   } else {
+  //     await page.locator('input.flex-1').first().fill(amount);
+  //     swapBtn = page.locator('button:has-text("Swap")').nth(2);
+  //     await swapBtn.waitFor({ state: 'visible' });
+  //   }
+
+  //   swapBtn.click();
+
+  //   await rabbyConfirmTx(context);
+  //   await page.waitForTimeout(6000);
+  //   await page.close();
+
+  //   Logger.ok(account, "clober");
+  // } catch (error: unknown) {
+  //   Logger.error(account, "clober");
+  //   page.close();
+  // }
 }
 
 export const cloberRabby = async (
