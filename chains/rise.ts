@@ -119,7 +119,7 @@ export const inarifi = async (
       await page.locator('[data-cy="approvalButton"]').click();
       await rabbyConfirmTx(context);
       await page.mouse.click(100, 100);
-      await page.waitForTimeout(4000);
+      await page.waitForTimeout(1500);
 
       await page.locator('[data-cy="supplyButton"]').click();
       await page.locator('input[aria-label="amount input"]').fill(amount);

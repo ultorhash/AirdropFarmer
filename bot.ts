@@ -11,8 +11,8 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
     const account = `#${i}`;
     
     await rabbySwitchAccount(page, account);
-    //await clober(context, account, 0.00005, 0.00008, Action.WRAP);
-    await inarifi(context, account, 0.00003, 0.00007);
+    await clober(context, account, 0.00005, 0.00008, Action.WRAP);
+    await inarifi(context, account, 0.00001, 0.00004);
   }
 
   await context.close();
@@ -20,7 +20,7 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 79, 79)
+    steps(password, 60, 62)
   ]);
 };
 
