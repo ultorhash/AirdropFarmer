@@ -7,17 +7,18 @@ const steps = async (password: string, fromAccount: number, toAccount: number): 
   const { context, page } = await metamaskLogin(password);
 
   for (let i = fromAccount; i <= toAccount; i++) {
-    const rabbyAccount = `Account ${i}`;
+    const account = `Account ${i}`;
     
-    await metamaskSwitchAccount(page, rabbyAccount);
+    await metamaskSwitchAccount(page, account);
+    await clober(context, account, 0.00005, 0.00008, true, false);
   }
 
-  // await context.close();
+  await context.close();
 }
 
 const run = async (): Promise<void> => {
   await Promise.all([
-    steps(password, 1, 1)
+    steps(password, 2, 10)
   ]);
 };
 

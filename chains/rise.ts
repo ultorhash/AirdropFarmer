@@ -1,7 +1,7 @@
 import { BrowserContext, Locator } from "playwright";
 import { clearActivity, confirmTx, connectWallet } from "../helpers";
 import { Logger } from "../utils/logger";
-import { rabbyConfirmTx } from "../utils/wallets/rabby";
+import { metamaskConfirmTx } from "../utils/wallets";
 
 export const gaspump = async (
   context: BrowserContext,
@@ -61,8 +61,8 @@ export const clober = async (
 
   swapBtn.click();
 
-  await rabbyConfirmTx(context);
-  await page.waitForTimeout(6000);
+  await metamaskConfirmTx(context);
+  await page.waitForTimeout(4000);
   await page.close();
 
   // try {

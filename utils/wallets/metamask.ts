@@ -58,3 +58,13 @@ export const disconnectAccountFromApps = async (context: BrowserContext, account
   await page.click('span[style*="arrow-left.svg"]');
   await page.waitForTimeout(1000);
 }
+
+export const metamaskConfirmTx = async (context: BrowserContext): Promise<void> => {
+  const txPopup = await context.waitForEvent('page');
+
+  await txPopup.waitForLoadState('domcontentloaded');
+  const approve = await txPopup.waitForSelector('[data-testid="confirm-footer-button"]');
+  approve.click();
+
+  await txPopup.waitForEvent('close');
+}
