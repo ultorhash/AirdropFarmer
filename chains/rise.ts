@@ -188,3 +188,28 @@ export const b3x = async (
     Logger.error(account, "b3x");
   }
 }
+
+export const onchaingm = async (context: BrowserContext, account: string): Promise<void> => {
+  try {
+    const page = await context.newPage();
+    page.goto("https://onchaingm.com");
+    await page.waitForLoadState('networkidle');
+
+    await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
+    await page.locator('span').filter({ hasText: /^GM on RISE Testnet$/ }).nth(1).click();
+    
+    await rabbyConfirmTx(context);
+    await page.mouse.click(100, 100);
+
+    await page.locator('span').filter({ hasText: /^Deploy$/ }).click();
+    await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
+    await page.locator('[data-network-id="11155931"] span.truncate').filter({ hasText: /^Deploy$/ }).click();
+
+    await rabbyConfirmTx(context);
+    await page.close();
+
+    Logger.ok(account, `onchaingm GM + contract deployment`);
+  } catch (error: unknown) {
+    Logger.error(account, "onchaingm");
+  }
+}
