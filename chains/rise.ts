@@ -189,8 +189,14 @@ export const b3x = async (
   }
 }
 
-export const onchaingm = async (context: BrowserContext, account: string): Promise<void> => {
+export const onchaingm = async (
+  context: BrowserContext,
+  account: string,
+  minWaitSeconds: number,
+  maxWaitSeconds: number
+): Promise<void> => {
   try {
+    const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
     const page = await context.newPage();
     page.goto("https://onchaingm.com");
     await page.waitForLoadState('networkidle');
@@ -199,7 +205,8 @@ export const onchaingm = async (context: BrowserContext, account: string): Promi
     await page.locator('span').filter({ hasText: /^GM on RISE Testnet$/ }).nth(1).click();
     
     await rabbyConfirmTx(context);
-    await page.mouse.click(100, 100);
+    await page.mouse.click(10, 10);
+    await page.waitForTimeout(waitBetween);
 
     await page.locator('span').filter({ hasText: /^Deploy$/ }).click();
     await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
