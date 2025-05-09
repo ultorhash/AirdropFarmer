@@ -10,24 +10,24 @@ export const gaspump = async (
   min: number,
   max: number
 ): Promise<void> => {
-  try {
-    const page = await context.newPage();
-    page.goto("https://gaspump.network");
-    await page.waitForLoadState('networkidle');
+  const page = await context.newPage();
+  page.goto("https://gaspump.network");
+  await page.waitForLoadState('networkidle');
 
+  try {
     const amount = (Math.random() * (max - min) + min).toFixed(6);
     await page.locator('.base-Input-input').first().fill(amount);
 
     await page.locator('[data-testid="swap-review-btn"]').filter({ hasText: /^Review Swap$/ }).click();
-    await page.locator('button.base-Button-root', { hasText: 'Confirm swap' }).click();
+    await page.locator('button.base-Button-root').filter({ hasText: /^Confirm swap$/ }).click();
 
-    await confirmTx(context);
-    await page.waitForTimeout(2000);
+    await rabbyConfirmTx(context);
     await page.close();
   
-    console.log("\x1b[32m", account, "gaspump success", "\x1b[0m");
-  } catch (error: unknown) {
-    console.log("\x1b[31m", account, "gaspump error", "\x1b[0m");
+    Logger.ok(account, "gaspump");
+  } catch (err: unknown) {
+    Logger.error(account, "gaspump");
+    page.close();
   }
 }
 
