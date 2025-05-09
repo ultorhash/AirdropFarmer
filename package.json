@@ -3,6 +3,8 @@
     "start": "ts-node bot.ts"
   },
   "dependencies": {
+    "@types/lodash": "^4.17.16",
+    "lodash": "^4.17.21",
     "playwright": "^1.51.1"
   }
 }

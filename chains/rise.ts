@@ -2,29 +2,78 @@ import { BrowserContext, Locator } from "playwright";
 import { clearActivity, confirmTx, connectWallet } from "../helpers";
 import { Logger } from "../utils/logger";
 import { metamaskConfirmTx, rabbyConfirmTx } from "../utils/wallets";
-import { Action } from "../enums";
+import { Action, LiquiditySize } from "../enums";
 
 export const gaspump = async (
   context: BrowserContext,
   account: string,
   min: number,
-  max: number
+  max: number,
+  action: Action,
+  liquidityPair: string,
+  liquiditySize = LiquiditySize.QUARTER
 ): Promise<void> => {
   const page = await context.newPage();
   page.goto("https://gaspump.network");
   await page.waitForLoadState('networkidle');
 
   try {
-    const amount = (Math.random() * (max - min) + min).toFixed(6);
-    await page.locator('.base-Input-input').first().fill(amount);
+    switch (action) {
+      case Action.SWAP:
+        const amount = (Math.random() * (max - min) + min).toFixed(6);
+        await page.locator('.base-Input-input').first().fill(amount);
 
-    await page.locator('[data-testid="swap-review-btn"]').filter({ hasText: /^Review Swap$/ }).click();
-    await page.locator('button.base-Button-root').filter({ hasText: /^Confirm swap$/ }).click();
+        await page.locator('[data-testid="swap-review-btn"]').filter({ hasText: /^Review Swap$/ }).click();
+        await page.locator('button.base-Button-root').filter({ hasText: /^Confirm swap$/ }).click();
 
-    await rabbyConfirmTx(context);
+        await rabbyConfirmTx(context);
+        break;
+      case Action.LIQUIDITY:
+        const liquidityTokens = liquidityPair.split("/");
+
+        // Search pair by tokens
+        await page.locator('div').filter({ hasText: /^Pool$/ }).first().click();
+        await page.locator('button').filter({ hasText: /^Search$/ }).click();
+        await page.locator('div[data-testid="token-picker-item"] div')
+          .filter({ hasText: new RegExp(`^${liquidityTokens[0]}$`) })
+          .first()
+          .click();
+
+        await page.locator('button').filter({ hasText: /^Search$/ }).click();
+        await page.locator('div[data-testid="token-picker-item"] div')
+          .filter({ hasText: new RegExp(`^${liquidityTokens[1]}$`) })
+          .first()
+          .click();
+
+        // Wait for the pools to load and pick the first one
+        await page.waitForTimeout(3000);
+        await page.locator('button').filter({ hasText: /^Add$/ }).first().click();
+
+        // Enter the liquidity size and approve tokens
+        await page.locator('button').filter({ hasText: new RegExp(`^${liquiditySize}$`) }).first().click();
+
+        // Check if approval is required and approve tokens
+        const canSupply = await page.locator('button').filter({ hasText: /^Supply$/ }).count() > 0;
+        if (!canSupply) {
+          await page.locator('button').filter({ hasText: new RegExp(`^Approve ${liquidityTokens[0]}$`) }).click();
+          await rabbyConfirmTx(context);
+          await page.locator('button').filter({ hasText: new RegExp(`^Approve ${liquidityTokens[1]}$`) }).click();
+          await rabbyConfirmTx(context);
+        }
+
+        // Supply
+        await page.locator('button').filter({ hasText: /^Supply$/ }).first().click();
+        await page.locator('button').filter({ hasText: /^Confirm$/ }).first().click();
+        await page.locator('button').filter({ hasText: /^Confirm$/ }).first().click();
+        await rabbyConfirmTx(context);
+        break;
+      default:
+        throw new Error("Action not defined!");
+    }
+
     await page.close();
   
-    Logger.ok(account, "gaspump");
+    Logger.ok(account, `gaspump ${action}`);
   } catch (err: unknown) {
     Logger.error(account, "gaspump");
     page.close();
@@ -60,7 +109,7 @@ export const clober = async (
         swapBtn = page.locator('button:has-text("Unwrap")').first();
         break;
       default:
-        throw new Error("Action not handled!");
+        throw new Error("Action not defined!");
     }
 
     await swapBtn.waitFor({ state: 'visible' });
@@ -193,7 +242,8 @@ export const onchaingm = async (
   context: BrowserContext,
   account: string,
   minWaitSeconds: number,
-  maxWaitSeconds: number
+  maxWaitSeconds: number,
+  skipGM: boolean
 ): Promise<void> => {
   try {
     const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
@@ -201,12 +251,16 @@ export const onchaingm = async (
     page.goto("https://onchaingm.com");
     await page.waitForLoadState('networkidle');
 
-    await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
-    await page.locator('span').filter({ hasText: /^GM on RISE Testnet$/ }).nth(1).click();
-    
-    await rabbyConfirmTx(context);
-    await page.mouse.click(10, 10);
-    await page.waitForTimeout(waitBetween);
+    if (!skipGM) {
+      await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
+      await page.locator('span').filter({ hasText: /^GM on RISE Testnet$/ }).nth(1).click();
+      
+      await rabbyConfirmTx(context);
+      await page.mouse.click(10, 10);
+      Logger.ok(account, `onchaingm GM`);
+
+      await page.waitForTimeout(waitBetween);
+    }
 
     await page.locator('span').filter({ hasText: /^Deploy$/ }).click();
     await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
@@ -215,7 +269,7 @@ export const onchaingm = async (
     await rabbyConfirmTx(context);
     await page.close();
 
-    Logger.ok(account, `onchaingm GM + contract deployment`);
+    Logger.ok(account, `onchaingm contract deployment`);
   } catch (error: unknown) {
     Logger.error(account, "onchaingm");
   }
