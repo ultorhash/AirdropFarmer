@@ -50,20 +50,20 @@ export const gaspump = async (
         await page.locator('button').filter({ hasText: /^Add$/ }).first().click();
 
         // Enter the liquidity size and approve tokens
-        await page.locator('button').filter({ hasText: new RegExp(`^${liquiditySize}$`) }).first().click();
+        await page.locator('button').filter({ hasText: new RegExp(`^${liquiditySize}$`)}).first().click();
 
-        // Check if approval is required and approve tokens
-        const canSupply = await page.locator('button').filter({ hasText: /^Supply$/ }).count() > 0;
-        if (!canSupply) {
+        const needApprove = await page.locator('button').filter({ hasText: "Approve" }).count() > 0;
+        if (needApprove) {
           await page.locator('button').filter({ hasText: new RegExp(`^Approve ${liquidityTokens[0]}$`) }).click();
           await rabbyConfirmTx(context);
           await page.locator('button').filter({ hasText: new RegExp(`^Approve ${liquidityTokens[1]}$`) }).click();
           await rabbyConfirmTx(context);
         }
 
-        // Supply
-        await page.locator('button').filter({ hasText: /^Supply$/ }).first().click();
-        await page.locator('button').filter({ hasText: /^Confirm$/ }).first().click();
+        // Supply [css-ridtx hack, watch out for it]
+        const supplyBtn = await page.locator('button.css-ridtx');
+        await supplyBtn.scrollIntoViewIfNeeded();
+        await supplyBtn.click();
         await page.locator('button').filter({ hasText: /^Confirm$/ }).first().click();
         await rabbyConfirmTx(context);
         break;
