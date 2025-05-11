@@ -10,7 +10,7 @@ const settings = {
   password: "!Stolica34!",
   profile: AUTOMATED_2,
   dappsAmount: 2,
-  fromAccount: 1,
+  fromAccount: 13,
   toAccount: 50
 }
 
@@ -27,7 +27,7 @@ const bot = async (): Promise<void> => {
 
   for (let i = fromAccount; i <= toAccount; i++) {
     const account = `#${i}`;
-    await rabbySwitchAccount(page, account);
+    await rabbySwitchAccount(page, account, i === 1);
     const drawnDapps = _.sampleSize(dapps, dappsAmount);
 
     for (const dapp of drawnDapps) {
