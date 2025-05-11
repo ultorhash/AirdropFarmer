@@ -1,5 +1,7 @@
 import { BrowserContext, Page, chromium } from "playwright";
 
+let isFirstScroll: boolean = true;
+
 export const rabbyLogin = async (profile: number, password: string): Promise<{ context: BrowserContext, page: Page }> => {
   const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
@@ -24,12 +26,17 @@ export const rabbyLogin = async (profile: number, password: string): Promise<{ c
 export const rabbySwitchAccount = async (page: Page, account: string): Promise<void> => {
   await page.locator('div.current-address').click();
 
-  await page.evaluate(() => {
-    const scrollContainer = document.querySelector('.address-scroll-container');
-    if (scrollContainer) {
-      scrollContainer.scrollTop = 0;
-    }
-  });
+  // Scroll up only at the beginning
+  if (isFirstScroll) {
+    await page.evaluate(() => {
+      const scrollContainer = document.querySelector('.address-scroll-container');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+      }
+    });
+
+    isFirstScroll = false;
+  }
 
   await page
     .locator('div.address-group-list.management div.rabby-address-item-alias')
