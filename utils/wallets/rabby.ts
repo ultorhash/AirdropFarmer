@@ -1,6 +1,6 @@
 import { BrowserContext, Page, chromium } from "playwright";
 
-export const rabbyLogin = async (password: string): Promise<{ context: BrowserContext, page: Page }> => {
+export const rabbyLogin = async (profile: number, password: string): Promise<{ context: BrowserContext, page: Page }> => {
   const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
 
@@ -8,7 +8,7 @@ export const rabbyLogin = async (password: string): Promise<{ context: BrowserCo
     executablePath: bravePath,
     ignoreDefaultArgs: true,
     args: [
-      '--profile-directory=Profile 5',
+      `--profile-directory=Profile ${profile}`,
       '--remote-debugging-pipe'
     ]
   });
