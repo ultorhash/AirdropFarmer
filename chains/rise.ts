@@ -249,11 +249,11 @@ export const onchaingm = async (
     const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
     const page = await context.newPage();
     page.goto("https://onchaingm.com");
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     if (!skipGM) {
       await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
-      await page.locator('span').filter({ hasText: /^GM on RISE Testnet$/ }).nth(1).click();
+      await page.locator('span').filter({ hasText: /^GM on RISE$/ }).nth(1).click();
       
       await rabbyConfirmTx(context);
       await page.mouse.click(10, 10);

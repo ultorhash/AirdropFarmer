@@ -1,5 +1,7 @@
 import { BrowserContext, Page, chromium } from "playwright";
 
+let scrollUp: boolean = true;
+
 export const rabbyLogin = async (profile: number, password: string): Promise<{ context: BrowserContext, page: Page }> => {
   const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
@@ -21,7 +23,7 @@ export const rabbyLogin = async (profile: number, password: string): Promise<{ c
   return { context, page };
 }
 
-export const rabbySwitchAccount = async (page: Page, account: string, scrollUp: boolean): Promise<void> => {
+export const rabbySwitchAccount = async (page: Page, account: string): Promise<void> => {
   await page.locator('div.current-address').click();
 
   if (scrollUp) {
@@ -31,6 +33,8 @@ export const rabbySwitchAccount = async (page: Page, account: string, scrollUp: 
         scrollContainer.scrollTop = 0;
       }
     });
+
+    scrollUp = false;
   }
 
   await page

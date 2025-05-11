@@ -10,8 +10,8 @@ const settings = {
   password: "!Stolica34!",
   profile: AUTOMATED_2,
   dappsAmount: 2,
-  fromAccount: 13,
-  toAccount: 50
+  fromAccount: 17,
+  toAccount: 70
 }
 
 const bot = async (): Promise<void> => {
@@ -19,15 +19,15 @@ const bot = async (): Promise<void> => {
   const { context, page } = await rabbyLogin(profile, password);
 
   const dapps = [
-    (account: string) => gaspump(context, account, 0.00004, 0.00008, Action.SWAP, "USDT/PEPE"),
+    //(account: string) => gaspump(context, account, 0.00004, 0.00008, Action.SWAP, "USDT/PEPE"),
     (account: string) => clober(context, account, 0.00002, 0.00005, Action.WRAP),
     //(account: string) => inarifi(context, account, 0.00002, 0.00004),
-    //(account: string) => onchaingm(context, account, 2, 5, true)
+    (account: string) => onchaingm(context, account, 1, 2, false)
   ];
 
   for (let i = fromAccount; i <= toAccount; i++) {
     const account = `#${i}`;
-    await rabbySwitchAccount(page, account, i === 1);
+    await rabbySwitchAccount(page, account);
     const drawnDapps = _.sampleSize(dapps, dappsAmount);
 
     for (const dapp of drawnDapps) {
