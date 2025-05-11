@@ -8,10 +8,10 @@ const AUTOMATED_2 = 9;
 
 const settings = {
   password: "!Stolica34!",
-  profile: AUTOMATED_1,
+  profile: AUTOMATED_2,
   dappsAmount: 1,
-  fromAccount: 1,
-  toAccount: 50
+  fromAccount: 37,
+  toAccount: 37
 }
 
 const bot = async (): Promise<void> => {
@@ -20,7 +20,7 @@ const bot = async (): Promise<void> => {
 
   const dapps = [
     //(account: string) => gaspump(context, account, 0.00004, 0.00008, Action.SWAP, "USDT/PEPE"),
-    (account: string) => clober(context, account, 0.00002, 0.00005, Action.WRAP),
+    //(account: string) => clober(context, account, 0.00002, 0.00005, Action.WRAP),
     //(account: string) => inarifi(context, account, 0.00002, 0.00004),
     //(account: string) => onchaingm(context, account, 2, 5, true)
   ];

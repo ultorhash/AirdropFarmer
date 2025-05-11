@@ -23,6 +23,14 @@ export const rabbyLogin = async (profile: number, password: string): Promise<{ c
 
 export const rabbySwitchAccount = async (page: Page, account: string): Promise<void> => {
   await page.locator('div.current-address').click();
+
+  await page.evaluate(() => {
+    const scrollContainer = document.querySelector('.address-scroll-container');
+    if (scrollContainer) {
+      scrollContainer.scrollTop = 0;
+    }
+  });
+
   await page
     .locator('div.address-group-list.management div.rabby-address-item-alias')
     .filter({ hasText: new RegExp(`^Seed Phrase 1 ${account}$`) })
