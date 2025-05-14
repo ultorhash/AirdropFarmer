@@ -13,8 +13,8 @@ const settings = {
   password: "!Stolica34!",
   profile: AUTOMATED_1,
   dappsAmount: 2,
-  fromAccount: 2,
-  toAccount: 3
+  fromAccount: 1,
+  toAccount: 1
 }
 
 const bot = async (): Promise<void> => {

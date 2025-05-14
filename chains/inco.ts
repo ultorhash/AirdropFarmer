@@ -1,5 +1,6 @@
 import { BrowserContext } from "playwright";
 import { rabbyConfirmTx, rabbyConnect } from "../utils/wallets";
+import { Logger } from "../utils/logger";
 
 export const comfy = async (context: BrowserContext, account: string) => {
   const percentages = [0.25, 0.5, 0.75, 1];
@@ -20,33 +21,50 @@ export const comfy = async (context: BrowserContext, account: string) => {
   // Randomize amount to shield
   const shieldAmount = Math.round(percentages[Math.floor(Math.random() * percentages.length)] * usdcAmount);
 
-  for (let i = 0; i < assets.length; i++) {
-    await page.locator('button').filter({ hasText: /^Mint now$/ }).click();
-    await page.click(`label[for="${assets[i]}"]`);
+  try {
+    for (let i = 0; i < assets.length; i++) {
+      await page.locator('button').filter({ hasText: /^Mint now$/ }).click();
+      await page.click(`label[for="${assets[i]}"]`);
 
-    const amount = assets[i] === "usdc" ? usdcAmount : cusdcAmount;
-    await page.locator('input[placeholder="Enter Amount"]').fill(amount.toString());
-    await page.locator('button').filter({ hasText: /^Mint$/ }).click();
+      const amount = assets[i] === "usdc" ? usdcAmount : cusdcAmount;
+      await page.locator('input[placeholder="Enter Amount"]').fill(amount.toString());
+      await page.locator('button').filter({ hasText: /^Mint$/ }).click();
+      await rabbyConfirmTx(context);
+
+      // Double confirmation for cusdc
+      if (assets[i] === "cusdc") {
+        await rabbyConfirmTx(context);
+      }
+
+      // Wait between minting
+      await page.waitForTimeout(2000);
+    }
+    
+    await page.locator('button').filter({ hasText: /^Shield$/ }).click();
+    await page.locator('input[placeholder="0"]').fill(shieldAmount.toString());
+    await page.locator('button').filter({ hasText: /^Shield$/ }).nth(1).click();
+
+    // Triple confirmation
+    await rabbyConfirmTx(context);
+    await rabbyConfirmTx(context);
     await rabbyConfirmTx(context);
 
-    // Double confirmation for cusdc
-    if (assets[i] === "cusdc") {
+    // Randomize unshield
+    if (Math.random() < 0.5) {
+      const unshieldAmount = Math.floor(Math.random() * 50) + 1;
+      await page.locator('button').filter({ hasText: /^Unshield$/ }).click();
+      await page.locator('input[placeholder="0"]').fill(unshieldAmount.toString());
+      await page.locator('button').filter({ hasText: /^Unshield$/ }).nth(1).click();
+      await rabbyConfirmTx(context);
       await rabbyConfirmTx(context);
     }
 
-    // Wait between minting
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
+    await page.close();
+    Logger.ok(account, `comfy`);
+
+  } catch (err: unknown) {
+    Logger.error(account, "comfy");
+    page.close();
   }
-  
-  await page.locator('button').filter({ hasText: /^Shield$/ }).click();
-  await page.locator('input[placeholder="0"]').fill(shieldAmount.toString());
-  await page.locator('button').filter({ hasText: /^Shield$/ }).nth(1).click();
-
-  // Triple confirmation
-  await rabbyConfirmTx(context);
-  await rabbyConfirmTx(context);
-  await rabbyConfirmTx(context);
-
-  await page.waitForTimeout(3_000);
-  await page.close();
 }
