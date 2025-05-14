@@ -43,6 +43,14 @@ export const rabbySwitchAccount = async (page: Page, account: string): Promise<v
     .click();
 }
 
+export const rabbyConnect = async (context: BrowserContext): Promise<void> => {
+  const popup = await context.waitForEvent('page');
+  await popup.waitForLoadState('domcontentloaded');
+
+  await popup.locator('button:has-text("Connect")').click();
+  await popup.waitForEvent('close');
+}
+
 export const rabbyConfirmTx = async (context: BrowserContext): Promise<void> => {
   const popup = await context.waitForEvent('page');
   await popup.waitForLoadState('domcontentloaded');

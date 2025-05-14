@@ -1,17 +1,19 @@
-import { b3x, clober, gaspump, inarifi, onchaingm } from "./chains/rise";
+import { b3x, clober, gaspump, inarifi, nft, onchaingm } from "./chains/rise";
 import { Action } from "./enums";
 import { rabbyLogin, rabbySwitchAccount } from "./utils/wallets";
 import _ from "lodash";
 
 const AUTOMATED_1 = 5;
 const AUTOMATED_2 = 9;
+const AUTOMATED_3 = 10;
+const AUTOMATED_PATRYK = 11;
 
 const settings = {
   password: "!Stolica34!",
-  profile: AUTOMATED_2,
-  dappsAmount: 1,
-  fromAccount: 76,
-  toAccount: 76
+  profile: AUTOMATED_PATRYK,
+  dappsAmount: 2,
+  fromAccount: 1,
+  toAccount: 100
 }
 
 const bot = async (): Promise<void> => {
@@ -19,10 +21,11 @@ const bot = async (): Promise<void> => {
   const { context, page } = await rabbyLogin(profile, password);
 
   const dapps = [
-    (account: string) => gaspump(context, account, 0.00004, 0.00008, Action.LIQUIDITY, "WETH/USDC"),
+    (account: string) => gaspump(context, account, 0.00004, 0.00008, Action.SWAP, "WETH/USDC"),
     //(account: string) => clober(context, account, 0.00002, 0.00005, Action.WRAP),
-    //(account: string) => inarifi(context, account, 0.00002, 0.00004),
-    //(account: string) => onchaingm(context, account, 1, 2, true)
+    (account: string) => inarifi(context, account, 0.00001, 0.00004),
+    //(account: string) => onchaingm(context, account, 1, 2, false),
+    //(account: string) => nft(context, account)
   ];
 
   for (let i = fromAccount; i <= toAccount; i++) {
