@@ -125,17 +125,6 @@ export const clober = async (
   }
 }
 
-export const cloberRabby = async (
-  context: BrowserContext,
-  account: string,
-  min: number,
-  max: number
-): Promise<void> => {
-  const page = await context.newPage();
-  await page.goto("https://rise.clober.io/trade?chain=11155931");
-  await page.waitForLoadState('networkidle');
-}
-
 export const inarifi = async (
   context: BrowserContext,
   account: string,
@@ -245,9 +234,10 @@ export const onchaingm = async (
   maxWaitSeconds: number,
   skipGM: boolean
 ): Promise<void> => {
+  const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
+  const page = await context.newPage();
+
   try {
-    const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
-    const page = await context.newPage();
     page.goto("https://onchaingm.com");
     await page.waitForLoadState('domcontentloaded');
 
@@ -272,6 +262,7 @@ export const onchaingm = async (
     Logger.ok(account, `onchaingm contract deployment`);
   } catch (error: unknown) {
     Logger.error(account, "onchaingm");
+    await page.close();
   }
 }
 
