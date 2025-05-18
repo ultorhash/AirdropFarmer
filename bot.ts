@@ -1,6 +1,6 @@
 import { arch, bitzy, rover } from "./chains/botanix";
 import { comfy } from "./chains/inco";
-import { pharos, zenith } from "./chains/pharos";
+import { mintair, pharos, zenith } from "./chains/pharos";
 import { b3x, clober, gaspump, inarifi, nft, onchaingm } from "./chains/rise";
 import { Action } from "./enums";
 import { rabbyLogin, rabbySwitchAccount } from "./utils/wallets";
@@ -15,8 +15,8 @@ const settings = {
   password: "!Stolica34!",
   profile: AUTOMATED_1,
   dappsAmount: 1,
-  fromAccount: 2,
-  toAccount: 10
+  fromAccount: 19,
+  toAccount: 100
 }
 
 const bot = async (): Promise<void> => {
@@ -33,7 +33,8 @@ const bot = async (): Promise<void> => {
     //(account: string) => arch(context, account, 0.00001, 0.00004),
     //(account: string) => rover(context, account, 0.00001, 0.00004)
     //(account: string) => bitzy(context, account, 0.00001, 0.00003),
-    (account: string) => zenith(context, account, 0.001, 0.003)
+    //(account: string) => mintair(context, account),
+    (account: string) => zenith(context, account, 0.001, 0.003, true)
   ];
 
   for (let i = fromAccount; i <= toAccount; i++) {
