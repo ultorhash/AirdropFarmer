@@ -1,10 +1,10 @@
 import { arch, bitzy, rover } from "./chains/botanix";
 import { onchaingm } from "./chains/common";
 import { comfy } from "./chains/inco";
-import { mintair, pharos, zenith } from "./chains/pharos";
+import { dailyCheckIn, mintair, zenith } from "./chains/pharos";
 import { b3x, clober, gaspump, inarifi, nft } from "./chains/rise";
 import { Action } from "./enums";
-import { rabbyLogin, rabbySwitchAccount } from "./utils/wallets";
+import { rabbyLogin, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
 import _ from "lodash";
 
 const AUTOMATED_1 = 5;
@@ -14,9 +14,9 @@ const AUTOMATED_PATRYK = 11;
 
 const settings = {
   password: "!Stolica34!",
-  profile: AUTOMATED_2,
-  dappsAmount: 2,
-  fromAccount: 25,
+  profile: AUTOMATED_1,
+  dappsAmount: 1,
+  fromAccount: 11,
   toAccount: 100
 }
 
@@ -26,7 +26,7 @@ const bot = async (): Promise<void> => {
 
   const dapps = [
     //(account: string) => gaspump(context, account, 0.00003, 0.00006, Action.SWAP, "WETH/USDC"),
-    //(account: string) => clober(context, account, 0.00002, 0.00005, Action.WRAP),
+    (account: string) => clober(context, account, 0.00002, 0.00005, Action.SWAP, true),
     //(account: string) => inarifi(context, account, 0.00002, 0.00005),
     //(account: string) => onchaingm(context, account, 1, 2, "Pharos", 688688, false),
     //(account: string) => nft(context, account)
@@ -34,8 +34,9 @@ const bot = async (): Promise<void> => {
     //(account: string) => arch(context, account, 0.00001, 0.00004),
     //(account: string) => rover(context, account, 0.00001, 0.00004)
     //(account: string) => bitzy(context, account, 0.00001, 0.00003),
-    (account: string) => mintair(context, account),
-    (account: string) => zenith(context, account, 0.001, 0.003, true)
+    //(account: string) => mintair(context, account),
+    //(account: string) => zenith(context, account, 0.0015, 0.004, false)
+    //(account: string) => dailyCheckIn(context, account, 2, 10)
   ];
 
   for (let i = fromAccount; i <= toAccount; i++) {

@@ -3,15 +3,27 @@ import { rabbyConfirmTx } from "../utils/wallets";
 import { Logger } from "../utils/logger";
 import { faker } from "@faker-js/faker";
 
-export const pharos = async (
+export const dailyCheckIn = async (
   context: BrowserContext,
-  account: string
+  account: string,
+  minWaitSeconds: number,
+  maxWaitSeconds: number
 ): Promise<void> => {
+  const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
   const page = await context.newPage();
-  page.goto("https://testnet.pharosnetwork.xyz/");
+  page.goto("https://testnet.pharosnetwork.xyz/experience/");
   await page.waitForLoadState('domcontentloaded');
 
-  await page.waitForTimeout(1_000_000);
+  try {
+    await page.locator('button', { hasText: /^Check in$/ }).click();
+    await page.waitForTimeout(waitBetween);
+    Logger.ok(account, "daily check in");
+
+  } catch (err: unknown) {
+    Logger.error(account, "daily check in");
+  } finally {
+    await page.close();
+  }
 }
 
 export const zenith = async (
@@ -95,7 +107,7 @@ export const zenith = async (
     }
     
   } catch (err: unknown) {
-    Logger.error(account, "zenith liquidity");
+    Logger.error(account, "zenith swap");
   } finally {
     page.close();
   }

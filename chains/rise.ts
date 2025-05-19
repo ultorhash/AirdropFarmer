@@ -85,7 +85,8 @@ export const clober = async (
   account: string,
   min: number,
   max: number,
-  action: Action
+  action: Action,
+  useMax: boolean
 ): Promise<void> => {
   const page = await context.newPage();
   await page.goto("https://rise.clober.io/trade?chain=11155931");
@@ -97,7 +98,9 @@ export const clober = async (
 
     switch (action) {
       case Action.SWAP:
-        await page.locator('input.flex-1').first().fill(amount);
+        useMax
+          ? await page.locator('button').filter({ hasText: /^MAX$/ }).first().click()
+          : await page.locator('input.flex-1').first().fill(amount);
         swapBtn = page.locator('button:has-text("Swap")').nth(2);
         break;
       case Action.WRAP:
@@ -114,6 +117,15 @@ export const clober = async (
 
     await swapBtn.waitFor({ state: 'visible' });
     swapBtn.click();
+
+    // Check if approval needed by modal title
+    const loader = page.locator('.animate-spin');
+    await loader.waitFor({ state: 'visible' });
+    const modalTitle = await loader.locator('xpath=preceding-sibling::div').innerText();
+  
+    if (modalTitle.toLowerCase().includes('approve')) {
+      await rabbyConfirmTx(context);
+    }
 
     await rabbyConfirmTx(context);
     await page.close();
