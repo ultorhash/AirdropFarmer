@@ -29,32 +29,36 @@ export const zenith = async (
     // // Select token to swap
     const tokens = ["USDC", "USDT", "wPHRS"];
     const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
-    // await page.locator('button.open-currency-select-button').filter({ hasText: /^Select token$/ }).click();
-    // await page.locator('div').filter({ hasText: new RegExp(`^${randomToken}$`) }).first().click();
+    await page.locator('button.open-currency-select-button').filter({ hasText: /^Select token$/ }).click();
+    await page.locator('div').filter({ hasText: new RegExp(`^${randomToken}$`) }).first().click();
 
-    // // Enter the amount
-    // const amount = (Math.random() * (max - min) + min).toFixed(5);
-    // await page.locator('input#swap-currency-input[placeholder="0"]').fill(amount);
+    // Enter the amount
+    const amount = (Math.random() * (max - min) + min).toFixed(5);
+    await page.locator('input#swap-currency-input[placeholder="0"]').fill(amount);
 
-    // // Detect if swap or wrap
-    // const wrapBtn = await page.waitForSelector('[data-testid="wrap-button"]', { timeout: 3000 }).catch(() => null);
-    // if (wrapBtn) {
-    //   await wrapBtn.click();
-    // } else {
-    //   await page.waitForSelector('#swap-button').then(() => page.click('#swap-button'));
-    //   await page.locator('[data-testid="confirm-swap-button"]').click();
-    // }
+    // Detect if swap or wrap
+    const wrapBtn = await page.waitForSelector('[data-testid="wrap-button"]', { timeout: 3000 }).catch(() => null);
+    if (wrapBtn) {
+      await wrapBtn.click();
+    } else {
+      await page.waitForSelector('#swap-button').then(() => page.click('#swap-button'));
+      await page.locator('[data-testid="confirm-swap-button"]').click();
+    }
 
-    // await rabbyConfirmTx(context);
-    // Logger.ok(account, "zenith swap");
+    await rabbyConfirmTx(context);
+    Logger.ok(account, "zenith swap");
 
     if (addLiquidity) {
+      await page.mouse.click(10, 10);
       const supplyTokens = ["USDC", "USDT"];
       const randomSupplyToken = supplyTokens[Math.floor(Math.random() * supplyTokens.length)]
       await page.locator('[data-testid="pool-nav-link"]').first().click();
+      await page.waitForTimeout(1000);
       await page.locator('[data-cy="join-pool-button"]').click();
+      await page.waitForTimeout(1000);
       await page.locator('button.open-currency-select-button').nth(1).click();
-      await page.locator('div').filter({ hasText: new RegExp(`^${randomSupplyToken}$`) }).first().click();
+      await page.waitForTimeout(1000);
+      await page.locator(`[data-testid="common-base-${randomSupplyToken}"]`).first().click();
       await page.locator('div').filter({ hasText: /^Best for most pairs.$/ }).click();
 
       const balance = +(await page.locator('div').filter({ hasText: "Balance" }).last().innerText()).replace("Balance: ", "");
@@ -83,16 +87,15 @@ export const zenith = async (
       }
 
       await previewBtn.click();
+      //
       await page.locator('button').filter({ hasText: /^Add$/ }).click();
       await rabbyConfirmTx(context);
 
       Logger.ok(account, "zenith liquidity provided");
-    } else {
-      Logger.info(account, "zenith liquidity skipped");
     }
     
   } catch (err: unknown) {
-    Logger.error(account, err as string);
+    Logger.error(account, "zenith liquidity");
   } finally {
     page.close();
   }

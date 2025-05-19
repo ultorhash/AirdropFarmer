@@ -1,7 +1,8 @@
 import { arch, bitzy, rover } from "./chains/botanix";
+import { onchaingm } from "./chains/common";
 import { comfy } from "./chains/inco";
 import { mintair, pharos, zenith } from "./chains/pharos";
-import { b3x, clober, gaspump, inarifi, nft, onchaingm } from "./chains/rise";
+import { b3x, clober, gaspump, inarifi, nft } from "./chains/rise";
 import { Action } from "./enums";
 import { rabbyLogin, rabbySwitchAccount } from "./utils/wallets";
 import _ from "lodash";
@@ -13,9 +14,9 @@ const AUTOMATED_PATRYK = 11;
 
 const settings = {
   password: "!Stolica34!",
-  profile: AUTOMATED_1,
-  dappsAmount: 1,
-  fromAccount: 19,
+  profile: AUTOMATED_2,
+  dappsAmount: 2,
+  fromAccount: 25,
   toAccount: 100
 }
 
@@ -27,13 +28,13 @@ const bot = async (): Promise<void> => {
     //(account: string) => gaspump(context, account, 0.00003, 0.00006, Action.SWAP, "WETH/USDC"),
     //(account: string) => clober(context, account, 0.00002, 0.00005, Action.WRAP),
     //(account: string) => inarifi(context, account, 0.00002, 0.00005),
-    //(account: string) => onchaingm(context, account, 1, 2, false),
+    //(account: string) => onchaingm(context, account, 1, 2, "Pharos", 688688, false),
     //(account: string) => nft(context, account)
     //(account: string) => comfy(context, account)
     //(account: string) => arch(context, account, 0.00001, 0.00004),
     //(account: string) => rover(context, account, 0.00001, 0.00004)
     //(account: string) => bitzy(context, account, 0.00001, 0.00003),
-    //(account: string) => mintair(context, account),
+    (account: string) => mintair(context, account),
     (account: string) => zenith(context, account, 0.001, 0.003, true)
   ];
 
