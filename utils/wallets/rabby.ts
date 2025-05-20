@@ -1,8 +1,9 @@
 import { BrowserContext, Page, chromium } from "playwright";
+import { Session } from "../../interfaces";
 
 let scrollUp: boolean = true;
 
-export const rabbyLogin = async (profile: number, password: string): Promise<{ context: BrowserContext, page: Page }> => {
+export const rabbyLoginBrave = async (profile: number, password: string): Promise<Session> => {
   const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
 
@@ -23,15 +24,15 @@ export const rabbyLogin = async (profile: number, password: string): Promise<{ c
   return { context, page };
 }
 
-export const rabbyLoginEdge = async (profile: number, password: string): Promise<{ context: BrowserContext, page: Page }> => {
-  const bravePath = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\.msedge.exe";
+export const rabbyLoginEdge = async (profile: string, password: string): Promise<Session> => {
+  const edgePath = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\Microsoft\\Edge\\User Data";
 
   const context = await chromium.launchPersistentContext(userDataDir, {
-    executablePath: bravePath,
+    executablePath: edgePath,
     ignoreDefaultArgs: true,
     args: [
-      `--profile-directory=Profile ${profile}`,
+      `--profile-directory=${profile}`,
       '--remote-debugging-pipe'
     ]
   });

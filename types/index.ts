@@ -1,1 +1,1 @@
-export * from './network.type';
+export * from './profile';
