@@ -9,7 +9,7 @@ export const onchaingm = async (
   maxWaitSeconds: number,
   network: string,
   chainId: number,
-  skipGM: boolean
+  gm: boolean
 ): Promise<void> => {
   const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
   const page = await context.newPage();
@@ -18,7 +18,7 @@ export const onchaingm = async (
     page.goto("https://onchaingm.com");
     await page.waitForLoadState('domcontentloaded');
 
-    if (!skipGM) {
+    if (gm) {
       await page.locator('button').filter({ hasText: /^Testnet$/ }).click();
       await page.locator('span').filter({ hasText: new RegExp(`^GM on ${network}$`) }).nth(1).click();
       
