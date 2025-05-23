@@ -3,5 +3,6 @@ export enum Action {
   WRAP = "Wrap",
   UNWRAP = "Unwrap",
   LIQUIDITY = "Liquidity",
-  FAUCET = "Faucet"
+  FAUCET = "Faucet",
+  MINT_AND_STAKE = "Mint and Stake"
 }

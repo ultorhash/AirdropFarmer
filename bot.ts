@@ -2,7 +2,7 @@ import { BrowserContext, Page } from "playwright";
 import { arch, bitzy, rover } from "./chains/botanix";
 import { mintair, onchaingm } from "./chains/common";
 import { comfy } from "./chains/inco";
-import { dailyCheckIn, faroswap, infiexchange, zenith } from "./chains/pharos";
+import { dailyCheckIn, faroswap, infiexchange, turing, zenith } from "./chains/pharos";
 import { b3x, clober, gaspump, inarifi, nft } from "./chains/rise";
 import { Action } from "./enums";
 import { rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
@@ -27,8 +27,8 @@ const settings = {
     edge: EDGE_AUTOMATED_2
   },
   dappsAmount: 1,
-  fromAccount: 5,
-  toAccount: 100
+  fromAccount: 6,
+  toAccount: 7
 }
 
 const riseDapps = [
@@ -44,6 +44,7 @@ const pharosDapps = [
   //(ctx: BrowserContext, acc: string) => onchaingm(ctx, acc, 1, 2, "Pharos", 688688, true)
   //(ctx: BrowserContext, acc: string) => faroswap(ctx, acc, 0.003, 0.008, Action.SWAP)
   //(ctx: BrowserContext, acc: string) => infiexchange(ctx, acc, 0.003, 0.008, Action.SWAP)
+  (ctx: BrowserContext, acc: string) => turing(ctx, acc, 0.003, 0.008, Action.MINT_AND_STAKE)
 ];
 
 const runProfile = async (
