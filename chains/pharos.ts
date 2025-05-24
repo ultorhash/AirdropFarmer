@@ -146,7 +146,7 @@ export const zenith = async (
   } catch (err: unknown) {
     Logger.error(account, `zenith ${action.toLowerCase()}`);
   } finally {
-    page.close();
+    await page.close();
   }
 }
 
@@ -175,37 +175,45 @@ export const turing = async (
   page.goto("https://app.turing.finance/");
   await page.waitForLoadState('networkidle');
 
-  // TODO: Remove after dapp is well integrated
-  await page.waitForTimeout(2000);
-  await page.mouse.click(10, 10);
-  await page.waitForTimeout(2000);
+  try {
+    // TODO: Remove after dapp is well integrated
+    await page.waitForTimeout(2000);
+    await page.mouse.click(10, 10);
+    await page.waitForTimeout(2000);
 
-  const amount = +(Math.random() * (max - min) + min).toFixed(5);
-  await page.locator('input').first().fill(amount.toString());
-  await page.locator('button', { hasText: /^Mint$/ }).click();
-  await rabbyConfirmTx(context);
+    const amount = +(Math.random() * (max - min) + min).toFixed(5);
+    await page.locator('input').first().fill(amount.toString());
+    await page.locator('button', { hasText: /^Mint$/ }).click();
+    await rabbyConfirmTx(context);
 
-  // Wait for minted tokens
-  await page.waitForTimeout(3000);
-  await page.mouse.click(10, 10);
+    // Wait for minted tokens
+    await page.waitForTimeout(3000);
+    await page.mouse.click(10, 10);
 
-  await page.locator('a[href="/stake"]').first().click();
-  await page.waitForTimeout(1000);
-  const balance = await page.locator('span.text-\\[\\#7d7d7d\\] span.text-black').first().textContent();
+    await page.locator('a[href="/stake"]').first().click();
+    await page.waitForTimeout(1000);
+    const balance = await page.locator('span.text-\\[\\#7d7d7d\\] span.text-black').first().textContent();
 
-  const percentages = [0.25, 0.5, 0.75];
-  const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
-  const stakeAmount = +(+balance * randomPercentage).toFixed(5);
+    const percentages = [0.25, 0.5, 0.75];
+    const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
+    const stakeAmount = +(+balance * randomPercentage).toFixed(5);
 
-  await page.locator('input').first().fill(stakeAmount.toString());
-  await page.locator('button', { hasText: /^Approve$/ }).click();
+    await page.locator('input').first().fill(stakeAmount.toString());
+    await page.locator('button', { hasText: /^Approve$/ }).click();
 
-  // Approve exact amount and stake
-  await rabbyConfirmTx(context);
-  await page.waitForTimeout(3000);
-  await page.mouse.click(10, 10);
-  await page.locator('button', { hasText: /^Stake$/ }).nth(1).click();
-  await rabbyConfirmTx(context);
+    // Approve exact amount and stake
+    await rabbyConfirmTx(context);
+    await page.waitForTimeout(3000);
+    await page.mouse.click(10, 10);
+    await page.locator('button', { hasText: /^Stake$/ }).nth(1).click();
+    await rabbyConfirmTx(context);
+    Logger.ok(account, "turing");
+
+  } catch (err: unknown) {
+    Logger.error(account, "turing");
+  } finally {
+    await page.close();
+  }
 }
 
 export const infiexchange = async (

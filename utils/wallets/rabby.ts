@@ -77,7 +77,10 @@ export const rabbyConfirmTx = async (context: BrowserContext): Promise<void> => 
   const popup = await context.waitForEvent('page');
   await popup.waitForLoadState('domcontentloaded');
 
+  // Experimental timeout in case of gas estimation error
+  await popup.locator('button:has-text("Sign")').waitFor({ timeout: 10000 });
   await popup.locator('button:has-text("Sign")').click();
+  await popup.locator('button:has-text("Confirm")').waitFor({ timeout: 10000 });
   await popup.locator('button:has-text("Confirm")').click();
   await popup.waitForEvent('close');
 }

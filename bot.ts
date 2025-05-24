@@ -23,12 +23,12 @@ const EDGE_AUTOMATED_PATRYK = "Profile 2";
 const settings = {
   password: "!Stolica34!",
   profiles: {
-    brave: BRAVE_AUTOMATED_1,
-    edge: EDGE_AUTOMATED_2
+    brave: BRAVE_AUTOMATED_PATRYK,
+    edge: EDGE_AUTOMATED_1
   },
   dappsAmount: 1,
-  fromAccount: 6,
-  toAccount: 7
+  fromAccount: 74,
+  toAccount: 100
 }
 
 const riseDapps = [
@@ -39,12 +39,12 @@ const riseDapps = [
 
 const pharosDapps = [
   //(ctx: BrowserContext, acc: string) => mintair(ctx, acc),
-  //(ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0015, 0.004, Action.FAUCET),
-  //(ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, 2, 10),
-  //(ctx: BrowserContext, acc: string) => onchaingm(ctx, acc, 1, 2, "Pharos", 688688, true)
+  //(ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0015, 0.004, Action.SWAP),
+  (ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, 2, 10),
+  //(ctx: BrowserContext, acc: string) => onchaingm(ctx, acc, 1, 2, "Pharos", 688688, false),
   //(ctx: BrowserContext, acc: string) => faroswap(ctx, acc, 0.003, 0.008, Action.SWAP)
   //(ctx: BrowserContext, acc: string) => infiexchange(ctx, acc, 0.003, 0.008, Action.SWAP)
-  (ctx: BrowserContext, acc: string) => turing(ctx, acc, 0.003, 0.008, Action.MINT_AND_STAKE)
+  //(ctx: BrowserContext, acc: string) => turing(ctx, acc, 0.003, 0.008, Action.MINT_AND_STAKE)
 ];
 
 const runProfile = async (
