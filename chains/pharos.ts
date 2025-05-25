@@ -176,6 +176,9 @@ export const turing = async (
   page.goto("https://app.turing.finance/");
   await page.waitForLoadState('networkidle');
 
+  const percentages = [0.25, 0.5, 0.75, 1];
+  const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
+
   try {
     // TODO: Remove after dapp is well integrated
     await page.waitForTimeout(2000);
@@ -192,22 +195,35 @@ export const turing = async (
         break;
       case Action.STAKE:
         await page.locator('a[href="/stake"]').first().click();
-        const balance = await page.locator('span.text-\\[\\#7d7d7d\\] span.text-black').first().textContent();
+        const stakeBalance = await page.locator('span.text-\\[\\#7d7d7d\\] span.text-black').first().textContent();
+        const stakeAmount = +(+stakeBalance * randomPercentage).toFixed(5);
 
-        const percentages = [0.25, 0.5, 0.75];
-        const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
-        const stakeAmount = +(+balance * randomPercentage).toFixed(5);
-
+        // Approve exact amount
         await page.locator('input').first().fill(stakeAmount.toString());
         await page.locator('button', { hasText: /^Approve$/ }).click();
-
-        // Approve exact amount and stake
         await rabbyConfirmTx(context);
+
         await page.waitForTimeout(3000);
         await page.mouse.click(10, 10);
+
+        // Stake
         await page.locator('button', { hasText: /^Stake$/ }).nth(1).click();
         await rabbyConfirmTx(context);
         Logger.ok(account, "turing stake");
+        break;
+      case Action.REDEEM:
+        await page.locator('a[href="/redeem"]').first().click();
+        const redeemBalance = await page.locator('span.text-\\[\\#7d7d7d\\] span.text-black').first().textContent();
+        const redeemAmount = +(+redeemBalance * randomPercentage).toFixed(5);
+
+        // Approve exact amount
+        await page.locator('input').first().fill(redeemAmount.toString());
+        await page.locator('button', { hasText: /^Approve$/ }).click();
+        await rabbyConfirmTx(context);
+
+        await page.locator('button', { hasText: /^Request$/ }).first().click();
+        await rabbyConfirmTx(context);
+        Logger.ok(account, "turing redeem request");
         break;
       default:
         throw new Error("Action not defined!");
