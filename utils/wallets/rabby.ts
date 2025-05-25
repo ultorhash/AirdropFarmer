@@ -75,12 +75,25 @@ export const rabbyConnect = async (context: BrowserContext): Promise<void> => {
 
 export const rabbyConfirmTx = async (context: BrowserContext): Promise<void> => {
   const popup = await context.waitForEvent('page');
-  await popup.waitForLoadState('domcontentloaded');
 
-  // Experimental timeout in case of gas estimation error
-  await popup.locator('button:has-text("Sign")').waitFor({ timeout: 10000 });
-  await popup.locator('button:has-text("Sign")').click();
-  await popup.locator('button:has-text("Confirm")').waitFor({ timeout: 10000 });
-  await popup.locator('button:has-text("Confirm")').click();
-  await popup.waitForEvent('close');
+  try {
+    await Promise.race([
+      (async () => {
+        await popup.waitForLoadState('domcontentloaded');
+        await popup.locator('button:has-text("Sign")').click();
+        await popup.locator('button:has-text("Confirm")').click();
+        await popup.waitForEvent('close');
+      })(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout: Rabby tx took too long')), 10_000)
+      )
+    ]);
+  } catch (err: unknown) {
+    if (!popup.isClosed()) {
+      try {
+        await popup.close();
+      } catch {}
+    }
+    throw new Error("Rabby tx confirmation error!");
+  }
 }

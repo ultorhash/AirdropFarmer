@@ -181,34 +181,36 @@ export const turing = async (
     await page.mouse.click(10, 10);
     await page.waitForTimeout(2000);
 
-    const amount = +(Math.random() * (max - min) + min).toFixed(5);
-    await page.locator('input').first().fill(amount.toString());
-    await page.locator('button', { hasText: /^Mint$/ }).click();
-    await rabbyConfirmTx(context);
+    switch (action) {
+      case Action.MINT:
+        const amount = +(Math.random() * (max - min) + min).toFixed(5);
+        await page.locator('input').first().fill(amount.toString());
+        await page.locator('button', { hasText: /^Mint$/ }).click();
+        await rabbyConfirmTx(context);
+        Logger.ok(account, "turing mint");
+        break;
+      case Action.STAKE:
+        await page.locator('a[href="/stake"]').first().click();
+        const balance = await page.locator('span.text-\\[\\#7d7d7d\\] span.text-black').first().textContent();
 
-    // Wait for minted tokens
-    await page.waitForTimeout(3000);
-    await page.mouse.click(10, 10);
+        const percentages = [0.25, 0.5, 0.75];
+        const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
+        const stakeAmount = +(+balance * randomPercentage).toFixed(5);
 
-    await page.locator('a[href="/stake"]').first().click();
-    await page.waitForTimeout(1000);
-    const balance = await page.locator('span.text-\\[\\#7d7d7d\\] span.text-black').first().textContent();
+        await page.locator('input').first().fill(stakeAmount.toString());
+        await page.locator('button', { hasText: /^Approve$/ }).click();
 
-    const percentages = [0.25, 0.5, 0.75];
-    const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
-    const stakeAmount = +(+balance * randomPercentage).toFixed(5);
-
-    await page.locator('input').first().fill(stakeAmount.toString());
-    await page.locator('button', { hasText: /^Approve$/ }).click();
-
-    // Approve exact amount and stake
-    await rabbyConfirmTx(context);
-    await page.waitForTimeout(3000);
-    await page.mouse.click(10, 10);
-    await page.locator('button', { hasText: /^Stake$/ }).nth(1).click();
-    await rabbyConfirmTx(context);
-    Logger.ok(account, "turing");
-
+        // Approve exact amount and stake
+        await rabbyConfirmTx(context);
+        await page.waitForTimeout(3000);
+        await page.mouse.click(10, 10);
+        await page.locator('button', { hasText: /^Stake$/ }).nth(1).click();
+        await rabbyConfirmTx(context);
+        Logger.ok(account, "turing stake");
+        break;
+      default:
+        throw new Error("Action not defined!");
+    }
   } catch (err: unknown) {
     Logger.error(account, "turing");
   } finally {
