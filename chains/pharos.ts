@@ -39,13 +39,9 @@ export const zenith = async (
 
   const tokens = ["USDC", "USDT", "wPHRS"];
   const supplyTokens = ["USDC", "USDT"];
-  const percentages = [0.25, 0.5, 0.75];
 
   const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
   const randomSupplyToken = supplyTokens[Math.floor(Math.random() * supplyTokens.length)];
-  const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
-
-  let amount: number = 0;
 
   try {
     switch (action) {
@@ -53,7 +49,7 @@ export const zenith = async (
         await page.locator('button.open-currency-select-button').filter({ hasText: /^Select token$/ }).click();
         await page.locator('div').filter({ hasText: new RegExp(`^${randomToken}$`) }).first().click();
 
-        amount = +(Math.random() * (max - min) + min).toFixed(5);
+        const amount = +(Math.random() * (max - min) + min).toFixed(5);
         await page.locator('input#swap-currency-input[placeholder="0"]').fill(amount.toString());
 
         const wrapBtn = await page.waitForSelector('[data-testid="wrap-button"]', { timeout: 3000 }).catch(() => null);
@@ -87,9 +83,13 @@ export const zenith = async (
           return;
         }
 
+        await page.locator('div', { hasText: /^Full range$/ }).first().click();
+
         // Calculate percentage of the supply
-        amount = +(balance * randomPercentage).toFixed(3);
-        await page.locator('input.token-amount-input').last().fill(amount.toString());
+        const percentages = [0.005, 0.01, 0.02];
+        const randomPercentage = percentages[Math.floor(Math.random() * percentages.length)];
+        const supplyAmount = +(balance * randomPercentage).toFixed(4);
+        await page.locator('input.token-amount-input').last().fill(supplyAmount.toString());
 
         // Check if can supply
         const previewBtn = page.locator('button', { hasText: /^Preview$/ });
@@ -121,8 +121,8 @@ export const zenith = async (
         await page.locator('button.open-currency-select-button').nth(1).click();
         await page.locator('[data-testid="common-base-PHRS"]').first().click();
         
-        amount = Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
-        await page.locator('input#swap-currency-input[placeholder="0"]').fill(amount.toString());
+        const faucetAmount = Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
+        await page.locator('input#swap-currency-input[placeholder="0"]').fill(faucetAmount.toString());
 
         await page.waitForSelector('#swap-button').then(() => page.click('#swap-button'));
         const swapBtn = page.locator('[data-testid="confirm-swap-button"]');
@@ -144,6 +144,7 @@ export const zenith = async (
     }
     
   } catch (err: unknown) {
+    console.log(err)
     Logger.error(account, `zenith ${action.toLowerCase()}`);
   } finally {
     await page.close();

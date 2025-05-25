@@ -23,11 +23,11 @@ const EDGE_AUTOMATED_PATRYK = "Profile 2";
 const settings = {
   password: "!Stolica34!",
   profiles: {
-    brave: BRAVE_AUTOMATED_2,
+    brave: BRAVE_AUTOMATED_1,
     edge: EDGE_AUTOMATED_3
   },
-  dappsAmount: 2,
-  fromAccount: 60,
+  dappsAmount: 1,
+  fromAccount: 1,
   toAccount: 100
 }
 
@@ -38,8 +38,8 @@ const riseDapps = [
 ];
 
 const pharosDapps = [
-  (ctx: BrowserContext, acc: string) => mintair(ctx, acc),
-  (ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0015, 0.004, Action.SWAP),
+  //(ctx: BrowserContext, acc: string) => mintair(ctx, acc),
+  (ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0015, 0.004, Action.LIQUIDITY),
   //(ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, 2, 10),
   //(ctx: BrowserContext, acc: string) => onchaingm(ctx, acc, 1, 2, "Pharos", 688688, false),
   //(ctx: BrowserContext, acc: string) => faroswap(ctx, acc, 0.003, 0.008, Action.SWAP)
@@ -74,8 +74,8 @@ const bot = async (): Promise<void> => {
   const { brave, edge } = profiles;
 
   await Promise.all([
-    //runProfile(() => rabbyLoginBrave(brave, password), pharosDapps, dappsAmount, fromAccount, toAccount),
-    runProfile(() => rabbyLoginEdge(edge, password), pharosDapps, dappsAmount, fromAccount, toAccount)
+    runProfile(() => rabbyLoginBrave(brave, password), pharosDapps, dappsAmount, fromAccount, toAccount),
+    //runProfile(() => rabbyLoginEdge(edge, password), pharosDapps, dappsAmount, fromAccount, toAccount)
   ]);
 }
 
