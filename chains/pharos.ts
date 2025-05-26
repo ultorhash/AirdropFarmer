@@ -65,6 +65,40 @@ export const zenith = async (
 
         Logger.ok(account, "zenith swap");
         break;
+      case Action.SELL:
+        await page.locator('button.open-currency-select-button').filter({ hasText: /^Select token$/ }).click();
+        await page.locator('div').filter({ hasText: new RegExp(`^${randomToken}$`) }).first().click();
+        await page.locator('[data-testid="swap-currency-button"]').click();
+        
+        await page.locator('[data-testid="balance-text"]').first().waitFor({ state: 'visible' });
+        const sellBalance = parseFloat((await page.locator('[data-testid="balance-text"]').first().innerText()).replace(/,/g, ''));
+        
+        const sellPercentages = [0.5, 0.75];
+        const sellRandomPercentage = sellPercentages[Math.floor(Math.random() * sellPercentages.length)];
+        const sellAmount = +(sellBalance * sellRandomPercentage).toFixed(4);
+
+        await page.locator('input#swap-currency-input[placeholder="0"]').fill(sellAmount.toString());
+        const unwrapBtn = await page.waitForSelector('[data-testid="wrap-button"]', { timeout: 3000 }).catch(() => null);
+
+        if (unwrapBtn) {
+          await unwrapBtn.click();
+        } else {
+          await page.waitForSelector('#swap-button').then(() => page.click('#swap-button'));
+
+          const confirmBtn = page.locator('[data-testid="confirm-swap-button"]');
+          const confirmBtnText = await confirmBtn.innerText();
+          await confirmBtn.click();
+
+          // Check if approval needed
+          if (confirmBtnText.toLowerCase().includes("approve")) {
+            await rabbyConfirmTx(context);
+          }
+        }
+        
+        await rabbyConfirmTx(context);
+
+        Logger.ok(account, "zenith sell");
+        break;
       case Action.LIQUIDITY:
         await page.locator('a[href="/pool"]').first().click();
         await page.waitForTimeout(1000);
@@ -128,9 +162,8 @@ export const zenith = async (
         const swapBtn = page.locator('[data-testid="confirm-swap-button"]');
         const swapBtnText = await swapBtn.innerText();
         await swapBtn.click();
-
-        console.log("TEXT", swapBtnText);
       
+        // Check if approval needed
         if (swapBtnText.toLowerCase().includes('approve')) {
           await rabbyConfirmTx(context);
         }
@@ -144,7 +177,6 @@ export const zenith = async (
     }
     
   } catch (err: unknown) {
-    console.log(err)
     Logger.error(account, `zenith ${action.toLowerCase()}`);
   } finally {
     await page.close();

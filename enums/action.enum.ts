@@ -1,6 +1,6 @@
 export enum Action {
   SWAP = "Swap",
-  SWAP_BACK = "Swap back",
+  SELL = "Sell",
   WRAP = "Wrap",
   UNWRAP = "Unwrap",
   LIQUIDITY = "Liquidity",
