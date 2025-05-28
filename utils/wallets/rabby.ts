@@ -85,7 +85,7 @@ export const rabbyConfirmTx = async (context: BrowserContext): Promise<void> => 
         await popup.waitForEvent('close');
       })(),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout: Rabby tx took too long')), 10_000)
+        setTimeout(() => reject(new Error('Timeout: Rabby tx took too long')), 12_000)
       )
     ]);
   } catch (err: unknown) {

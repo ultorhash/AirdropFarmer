@@ -1,5 +1,4 @@
 import { BrowserContext, Locator } from "playwright";
-import { clearActivity, confirmTx, connectWallet } from "../helpers";
 import { Logger } from "../utils/logger";
 import { metamaskConfirmTx, rabbyConfirmTx, rabbyConnect } from "../utils/wallets";
 import { Action, LiquiditySize } from "../enums";
@@ -196,45 +195,54 @@ export const b3x = async (
   try {
     const page = await context.newPage();
     page.goto("https://testnet.b3x.ai/#/trade");
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
-    let tradeType: string;
+    // Request tokens from faucet
+    await page.locator('a[href="#/faucet"]').first().click();
+    await page.locator('select').selectOption(await page.locator('option', { hasText: /^WSTETH$/ }).getAttribute('value'));
+    await page.locator('button', { hasText: /^Claim$/ }).click();
+    await rabbyConfirmTx(context);
+    await page.waitForTimeout(3000);
+
+    // Switch to trade view
+    await page.locator('a[href="#/trade"]').first().click();
 
     // Select tokens
     await page.locator('span.Token-symbol-text').first().click();
     await page.click('img[alt="WSTETH"]');
     await page.locator('span.Token-symbol-text').nth(1).click();
     await page.click('img[alt="XRP/USD"]');
-    //
 
-    // Switch from previous trade type E.g. Long -> Short
-    const isLongSelected = await page.locator('div.Tab-option').evaluateAll(el => {
-      return el.some((el: HTMLElement) => el.getAttribute('class')?.includes('active') && el.innerText.includes('Long'));
-    });
-
-    if (isLongSelected) {
-      await page.locator('span.boldFont').filter({ hasText: 'Short' }).click();
-      tradeType = "Short";
-
-    } else {
-      await page.locator('span.boldFont').filter({ hasText: 'Long' }).click();
-      tradeType = "Long";
+    // Choose random position
+    const positions = ["Long", "Short"];
+    const randomPosition = positions[Math.floor(Math.random() * positions.length)];
+    const selectedPosition = await page.locator('div.Tab-option.active').first().innerText();
+    if (selectedPosition !== randomPosition) {
+      await page.locator('div.Tab-option', { hasText: new RegExp(`^${randomPosition}$`) }).click();
     }
-    //
 
-    // Enter the amount and long
-    const amount = (Math.random() * (max - min) + min).toFixed(6);
+    // Enter the amount and confirm position
+    const amount = (Math.random() * (max - min) + min).toFixed(4);
     await page.locator('input.Exchange-swap-input').first().fill(amount);
-    await page.locator('button').filter({ hasText: new RegExp(`^${tradeType} XRP$`) }).click();
-    await page.locator('button').filter({ hasText: new RegExp(`^${tradeType}$`) }).click();
-    //
+    await page.locator('button').filter({ hasText: new RegExp(`^${randomPosition} XRP$`) }).click();
 
-    await confirmTx(context);
-    await page.waitForTimeout(2000);
+    const approveCbx = page.locator('div.ApproveTokenButton-checkbox');
+    await page.waitForTimeout(1000);
+
+    // Approve if needed
+    if (await approveCbx.count() > 0) {
+      await approveCbx.click();
+      await rabbyConfirmTx(context);
+    }
+
+    await page.locator('button').filter({ hasText: new RegExp(`^${randomPosition}$`) }).click();
+    await rabbyConfirmTx(context);
+
     await page.close();
+    Logger.ok(account, `b3x ${randomPosition} position`);
 
-    Logger.ok(account, `b3x [position: ${tradeType}]`);
-  } catch (error: unknown) {
+  } catch (err: unknown) {
+    console.log(err)
     Logger.error(account, "b3x");
   }
 }
