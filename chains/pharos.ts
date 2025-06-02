@@ -1,24 +1,40 @@
 import { BrowserContext } from "playwright";
-import { rabbyConfirmTx } from "../utils/wallets";
+import { rabbyConfirmTx, rabbyConnect } from "../utils/wallets";
 import { Logger } from "../utils/logger";
 import { Action } from "../enums";
 
 export const dailyCheckIn = async (
   context: BrowserContext,
   account: string,
-  minWaitSeconds: number,
-  maxWaitSeconds: number
+  reauthenticate: boolean
 ): Promise<void> => {
-  const waitBetween = Math.floor(Math.random() * maxWaitSeconds * 1000) + (minWaitSeconds * 1000);
   const page = await context.newPage();
   page.goto("https://testnet.pharosnetwork.xyz/experience/");
   await page.waitForLoadState('domcontentloaded');
 
   try {
+    if (reauthenticate) {
+      // Connect wallet
+      await page.locator('button', { hasText: /^Connect Wallet$/ }).click();
+      await page.click('text=Rabby Wallet');
+      await rabbyConnect(context, true);
+      await page.waitForTimeout(1000);
+
+      // Sign authority
+      await page.locator('button', { hasText: /^Continue$/ }).click();
+      await rabbyConfirmTx(context);
+    }
+
     await page.locator('button', { hasText: /^Check in$/ }).click();
-    await page.waitForTimeout(waitBetween);
+    await page.waitForTimeout(4000);
     Logger.ok(account, "daily check in");
 
+    if (reauthenticate) {
+      // Logout
+      await page.locator('span', { hasText: "..." }).click();
+      await page.locator('span', { hasText: /^Disconnect$/ }).click();
+      await page.waitForTimeout(2000);
+    }
   } catch (err: unknown) {
     Logger.error(account, "daily check in");
   } finally {
@@ -37,7 +53,7 @@ export const zenith = async (
   page.goto("https://testnet.zenithswap.xyz/swap");
   await page.waitForLoadState('domcontentloaded');
 
-  const tokens = ["USDC", "USDT", "wPHRS"];
+  const tokens = ["USDC", "USDT"]; // wPHRS
   const supplyTokens = ["USDC", "USDT"];
 
   const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
@@ -73,7 +89,7 @@ export const zenith = async (
         await page.locator('[data-testid="balance-text"]').first().waitFor({ state: 'visible' });
         const sellBalance = parseFloat((await page.locator('[data-testid="balance-text"]').first().innerText()).replace(/,/g, ''));
         
-        const sellPercentages = [0.5, 0.75];
+        const sellPercentages = [1];
         const sellRandomPercentage = sellPercentages[Math.floor(Math.random() * sellPercentages.length)];
         const sellAmount = +(sellBalance * sellRandomPercentage).toFixed(4);
 

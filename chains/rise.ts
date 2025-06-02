@@ -285,26 +285,3 @@ export const onchaingm = async (
     await page.close();
   }
 }
-
-export const nft = async (context: BrowserContext, account: string) => {
-  const page = await context.newPage();
-  page.goto("https://omnihub.xyz/collection/rise-testnet/0xaE68774b72a64eDcf07944e74147102907bcA95a");
-  await page.waitForLoadState('networkidle');
-
-  await page.locator('span:has-text("Connect Wallet")').click();
-  await page.locator("h6[data-v-3cbd51bb]").filter({ hasText: "Rabby Wallet" }).click();
-
-  await rabbyConnect(context);
-  await rabbyConfirmTx(context);
-
-  await page.locator('button:has-text("Mint")').click();
-  await rabbyConfirmTx(context);
-  await page.waitForTimeout(1000);
-
-  await page.locator("img[data-v-33361e2c]").click();
-  await page.click('text=Logout');
-
-  await page.waitForTimeout(1000);
-  Logger.ok(account, "nft");
-  await page.close();
-}

@@ -65,14 +65,6 @@ export const rabbySwitchAccount = async (page: Page, account: string): Promise<v
     .click();
 }
 
-export const rabbyConnect = async (context: BrowserContext): Promise<void> => {
-  const popup = await context.waitForEvent('page');
-  await popup.waitForLoadState('domcontentloaded');
-
-  await popup.locator('button:has-text("Connect")').click();
-  await popup.waitForEvent('close');
-}
-
 export const rabbyConfirmTx = async (context: BrowserContext): Promise<void> => {
   const popup = await context.waitForEvent('page');
 
@@ -86,6 +78,35 @@ export const rabbyConfirmTx = async (context: BrowserContext): Promise<void> => 
       })(),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Timeout: Rabby tx took too long')), 12_000)
+      )
+    ]);
+  } catch (err: unknown) {
+    if (!popup.isClosed()) {
+      try {
+        await popup.close();
+      } catch {}
+    }
+    throw new Error("Rabby tx confirmation error!");
+  }
+}
+
+export const rabbyConnect = async (context: BrowserContext, ignoreAll: boolean): Promise<void> => {
+  const popup = await context.waitForEvent('page');
+
+  try {
+    await Promise.race([
+      (async () => {
+        await popup.waitForLoadState('domcontentloaded');
+        
+        if (ignoreAll) {
+          await popup.locator('span:has-text("Ignore all")').click();
+        }
+
+        await popup.locator('button:has-text("Connect")').click();
+        await popup.waitForEvent('close');
+      })(),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout: Rabby connect took too long')), 12_000)
       )
     ]);
   } catch (err: unknown) {
