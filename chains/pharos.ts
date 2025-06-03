@@ -26,7 +26,7 @@ export const dailyCheckIn = async (
     }
 
     await page.locator('button', { hasText: /^Check in$/ }).click();
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(3500);
     Logger.ok(account, "daily check in");
 
     if (reauthenticate) {
@@ -319,6 +319,28 @@ export const infiexchange = async (
   //await page.locator('button', { hasText: /^Request GOCTO$/ }).click();
 
   await page.waitForTimeout(1_000_000);
+}
+
+export const gotchipus = async (
+  context: BrowserContext,
+  account: string
+): Promise<void> => {
+  const page = await context.newPage();
+  page.goto("https://gotchipus.com/");
+  await page.waitForLoadState('domcontentloaded');
+
+  try {
+    await page.locator('img[alt="Mint"]').click();
+    await page.locator('text=Mint Now').click();
+    await rabbyConfirmTx(context);
+    await page.waitForTimeout(1000);
+
+    Logger.ok(account, "gotchipus NFT");
+  } catch (err: unknown) {
+    Logger.error(account, "gotchipus NFT");
+  } finally {
+    await page.close();
+  }
 }
 
 //https://appv2.fufuture.io/u/trade
