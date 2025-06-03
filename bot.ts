@@ -2,13 +2,14 @@ import { BrowserContext, Page } from "playwright";
 import { arch, bitzy, rover } from "./chains/botanix";
 import { mintair, onchaingm } from "./chains/common";
 import { comfy } from "./chains/inco";
-import { dailyCheckIn, faroswap, gotchipus, infiexchange, turing, zenith } from "./chains/pharos";
+import { dailyCheckIn, faroswap, gotchipus, infiexchange, sendToFriend, turing, zenith } from "./chains/pharos";
 import { b3x, clober, gaspump, inarifi } from "./chains/rise";
 import { Action } from "./enums";
 import { rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
 import { Session } from "./interfaces";
 import { Profile } from "./types";
 import _ from "lodash";
+import { createTransferPairs, randomizeAddresses } from "./utils/addresses/address.utils";
 
 const BRAVE_AUTOMATED_1 = 5;
 const BRAVE_AUTOMATED_2 = 9;
@@ -28,7 +29,7 @@ const settings = {
 
   },
   dappsAmount: 1,
-  fromAccount: 16,
+  fromAccount: 3,
   toAccount: 100
 }
 
@@ -44,7 +45,8 @@ const pharosDapps = [
   //(ctx: BrowserContext, acc: string) => mintair(ctx, acc),
   //(ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0002, 0.0005, Action.SWAP),
   //(ctx: BrowserContext, acc: string) => gotchipus(ctx, acc),
-  (ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, false),
+  //(ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, false),
+  (ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, false),
   //(ctx: BrowserContext, acc: string) => onchaingm(ctx, acc, 1, 2, "Pharos", 688688, false),
   //(ctx: BrowserContext, acc: string) => faroswap(ctx, acc, 0.003, 0.008, Action.SWAP)
   //(ctx: BrowserContext, acc: string) => infiexchange(ctx, acc, 0.003, 0.008, Action.SWAP),

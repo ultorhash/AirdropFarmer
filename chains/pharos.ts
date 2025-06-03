@@ -2,6 +2,7 @@ import { BrowserContext } from "playwright";
 import { rabbyConfirmTx, rabbyConnect } from "../utils/wallets";
 import { Logger } from "../utils/logger";
 import { Action } from "../enums";
+import { addressPairs } from "../utils/addresses/address-pairs";
 
 export const dailyCheckIn = async (
   context: BrowserContext,
@@ -37,6 +38,49 @@ export const dailyCheckIn = async (
     }
   } catch (err: unknown) {
     Logger.error(account, "daily check in");
+  } finally {
+    await page.close();
+  }
+}
+
+
+export const sendToFriend = async (
+  context: BrowserContext,
+  account: string,
+  min: number,
+  max: number,
+  reauthenticate: boolean
+): Promise<void> => {
+  const page = await context.newPage();
+  page.goto("https://testnet.pharosnetwork.xyz/experience/");
+  await page.waitForLoadState('domcontentloaded');
+
+  try {
+    // Find receiver
+    let recipientAddress: string = "";
+    const currentAddress = await page.locator('span', { hasText: "..." }).innerText()
+    const [prefix, suffix] = currentAddress.split('...');
+    
+    for (const key of addressPairs.keys()) {
+      if (key.startsWith(prefix) && key.endsWith(suffix)) {
+        recipientAddress = addressPairs.get(key);
+      }
+    }
+
+    const amount = +(Math.random() * (max - min) + min).toFixed(6);
+
+    // Fill in the form
+    await page.locator('button', { hasText: /^Send$/ }).click();
+    await page.locator('input[placeholder="0.0"]').fill(amount.toString());
+    await page.waitForTimeout(1000);
+    await page.locator('input[placeholder="Enter Address"]').fill(recipientAddress);
+    await page.waitForTimeout(1000);
+    await page.locator('button', { hasText: /^Send PHRS$/ }).click();
+    
+    await rabbyConfirmTx(context);
+    Logger.ok(account, "send to friend");
+  } catch (err: unknown) {
+    Logger.error(account, "send to friend");
   } finally {
     await page.close();
   }
