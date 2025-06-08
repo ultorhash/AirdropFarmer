@@ -2,7 +2,7 @@ import { BrowserContext } from "playwright";
 import { rabbyConfirmTx, rabbyConnect } from "../utils/wallets";
 import { Logger } from "../utils/logger";
 import { Action } from "../enums";
-import { addressPairs } from "../utils/addresses/address-pairs";
+import { BRAVE_AUTOMATED_1_ADDRESS_PAIRS } from "../utils/addresses/address-pairs";
 
 export const dailyCheckIn = async (
   context: BrowserContext,
@@ -61,9 +61,9 @@ export const sendToFriend = async (
     const currentAddress = await page.locator('span', { hasText: "..." }).innerText()
     const [prefix, suffix] = currentAddress.split('...');
     
-    for (const key of addressPairs.keys()) {
+    for (const key of BRAVE_AUTOMATED_1_ADDRESS_PAIRS.keys()) {
       if (key.startsWith(prefix) && key.endsWith(suffix)) {
-        recipientAddress = addressPairs.get(key);
+        recipientAddress = BRAVE_AUTOMATED_1_ADDRESS_PAIRS.get(key);
       }
     }
 
@@ -389,4 +389,4 @@ export const gotchipus = async (
 
 //https://appv2.fufuture.io/u/trade
 //https://app.moveflow.xyz/
-
+//https://playground.easy-node.xyz/
