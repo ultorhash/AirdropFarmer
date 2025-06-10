@@ -1,7 +1,5 @@
 import { BrowserContext, Page } from "playwright";
-import { arch, bitzy, rover } from "./chains/botanix";
 import { mintair, onchaingm } from "./chains/common";
-import { comfy } from "./chains/inco";
 import { dailyCheckIn, faroswap, gotchipus, infiexchange, sendToFriend, turing, zenith } from "./chains/pharos";
 import { b3x, clober, gaspump, inarifi } from "./chains/rise";
 import { Action } from "./enums";
