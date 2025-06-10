@@ -22,8 +22,8 @@ const EDGE_AUTOMATED_PATRYK = "Profile 2";
 const settings = {
   password: "!Stolica34!",
   profiles: {
-    brave: BRAVE_AUTOMATED_1,
-    edge: EDGE_AUTOMATED_1
+    brave: BRAVE_AUTOMATED_3,
+    edge: EDGE_AUTOMATED_3
 
   },
   dappsAmount: 1,
@@ -39,12 +39,17 @@ const riseDapps = [
   //(ctx: BrowserContext, acc: string) => b3x(ctx, acc, 0.001, 0.003),
 ];
 
+const pharosDappsTemp = [
+  (ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0002, 0.0007, Action.SWAP),
+  (ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, false)
+];
+
 const pharosDapps = [
   //(ctx: BrowserContext, acc: string) => mintair(ctx, acc),
-  (ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0001, 0.0004, Action.SWAP),
+  (ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0001, 0.0006, Action.SWAP),
   //(ctx: BrowserContext, acc: string) => gotchipus(ctx, acc),
-  //(ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, false),
-  //(ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, false),
+  //(ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, true),
+  //(ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, true),
   //(ctx: BrowserContext, acc: string) => onchaingm(ctx, acc, 1, 2, "Pharos", 688688, false),
   //(ctx: BrowserContext, acc: string) => faroswap(ctx, acc, 0.003, 0.008, Action.SWAP)
   //(ctx: BrowserContext, acc: string) => infiexchange(ctx, acc, 0.003, 0.008, Action.SWAP),
@@ -79,7 +84,7 @@ const bot = async (): Promise<void> => {
 
   await Promise.all([
     runProfile(() => rabbyLoginBrave(brave, password), pharosDapps, dappsAmount, fromAccount, toAccount),
-    //runProfile(() => rabbyLoginEdge(edge, password), pharosDapps, dappsAmount, fromAccount, toAccount)
+    runProfile(() => rabbyLoginEdge(edge, password), pharosDapps, dappsAmount, fromAccount, toAccount)
   ]);
 }
 

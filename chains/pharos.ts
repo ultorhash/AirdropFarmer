@@ -2,7 +2,7 @@ import { BrowserContext } from "playwright";
 import { rabbyConfirmTx, rabbyConnect } from "../utils/wallets";
 import { Logger } from "../utils/logger";
 import { Action } from "../enums";
-import { BRAVE_AUTOMATED_1_ADDRESS_PAIRS } from "../utils/addresses/address-pairs";
+import { COMBINED_ADDRESS_PAIRS } from "../utils/addresses/address-pairs";
 
 export const dailyCheckIn = async (
   context: BrowserContext,
@@ -56,14 +56,26 @@ export const sendToFriend = async (
   await page.waitForLoadState('domcontentloaded');
 
   try {
+    if (reauthenticate) {
+      // Connect wallet
+      await page.locator('button', { hasText: /^Connect Wallet$/ }).click();
+      await page.click('text=Rabby Wallet');
+      await rabbyConnect(context, true);
+      await page.waitForTimeout(1000);
+
+      // Sign authority
+      await page.locator('button', { hasText: /^Continue$/ }).click();
+      await rabbyConfirmTx(context);
+    }
+
     // Find receiver
     let recipientAddress: string = "";
     const currentAddress = await page.locator('span', { hasText: "..." }).innerText()
     const [prefix, suffix] = currentAddress.split('...');
     
-    for (const key of BRAVE_AUTOMATED_1_ADDRESS_PAIRS.keys()) {
+    for (const key of COMBINED_ADDRESS_PAIRS.keys()) {
       if (key.startsWith(prefix) && key.endsWith(suffix)) {
-        recipientAddress = BRAVE_AUTOMATED_1_ADDRESS_PAIRS.get(key);
+        recipientAddress = COMBINED_ADDRESS_PAIRS.get(key);
       }
     }
 
@@ -79,7 +91,24 @@ export const sendToFriend = async (
     
     await rabbyConfirmTx(context);
     Logger.ok(account, "send to friend");
+
+    await page.mouse.click(10, 10);
+
+    if (reauthenticate) {
+      // Logout
+      await page.locator('span', { hasText: "..." }).click();
+      await page.locator('span', { hasText: /^Disconnect$/ }).click();
+      await page.waitForTimeout(2000);
+    }
   } catch (err: unknown) {
+    if (reauthenticate) {
+      await page.mouse.click(10, 10);
+
+      // Logout
+      await page.locator('span', { hasText: "..." }).click();
+      await page.locator('span', { hasText: /^Disconnect$/ }).click();
+      await page.waitForTimeout(2000);
+    }
     Logger.error(account, "send to friend");
   } finally {
     await page.close();
@@ -97,7 +126,7 @@ export const zenith = async (
   page.goto("https://testnet.zenithswap.xyz/swap");
   await page.waitForLoadState('domcontentloaded');
 
-  const tokens = ["USDC", "USDT"]; // wPHRS
+  const tokens = ["USDT"]; // wPHRS "USDC"
   const supplyTokens = ["USDC", "USDT"];
 
   const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
@@ -133,7 +162,7 @@ export const zenith = async (
         await page.locator('[data-testid="balance-text"]').first().waitFor({ state: 'visible' });
         const sellBalance = parseFloat((await page.locator('[data-testid="balance-text"]').first().innerText()).replace(/,/g, ''));
         
-        const sellPercentages = [1];
+        const sellPercentages = [0.99];
         const sellRandomPercentage = sellPercentages[Math.floor(Math.random() * sellPercentages.length)];
         const sellAmount = +(sellBalance * sellRandomPercentage).toFixed(4);
 
