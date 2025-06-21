@@ -6,6 +6,7 @@ import { Action } from "./enums";
 import { rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
 import { Session } from "./interfaces";
 import _ from "lodash";
+import { heliosStake } from "./chains/helios";
 
 const BRAVE_AUTOMATED_1 = 5;
 const BRAVE_AUTOMATED_2 = 9;
@@ -20,12 +21,12 @@ const EDGE_AUTOMATED_PATRYK = "Profile 2";
 const settings = {
   password: "!Stolica34!",
   profiles: {
-    brave: BRAVE_AUTOMATED_2,
-    edge: EDGE_AUTOMATED_2
+    brave: BRAVE_AUTOMATED_3,
+    edge: EDGE_AUTOMATED_3
   },
   dappsAmount: 1,
   fromAccount: 1,
-  toAccount: 100
+  toAccount: 2
 }
 
 const riseDapps = [
@@ -42,6 +43,10 @@ const pharosDapps = [
   //(ctx: BrowserContext, acc: string) => gotchipus(ctx, acc),
   //(ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, false),
   (ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, true)
+];
+
+const heliosDapps = [
+  (ctx: BrowserContext, acc: string) => heliosStake(ctx, acc, 0.001, 0.005)
 ];
 
 const runProfile = async (
