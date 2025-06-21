@@ -91,6 +91,8 @@ export const clober = async (
   await page.goto("https://rise.clober.io/trade?chain=11155931");
   await page.waitForLoadState('networkidle');
 
+  await page.locator('button', { hasText: /^Swap$/ }).nth(1).click();
+
   try {
     let swapBtn: Locator;
     const amount = (Math.random() * (max - min) + min).toFixed(6);
@@ -103,11 +105,11 @@ export const clober = async (
         swapBtn = page.locator('button:has-text("Swap")').nth(2);
         break;
       case Action.WRAP:
-        await page.locator('input.flex-1').first().fill(amount);
+        await page.locator('input[placeholder="0.0000"]').first().fill(amount);
         swapBtn = page.locator('button:has-text("Wrap")').first();
         break;
       case Action.UNWRAP:
-        await page.locator('button').filter({ hasText: /^MAX$/ }).first().click();
+        await page.locator('button', { hasText: /^MAX$/ }).nth(1).click();
         swapBtn = page.locator('button:has-text("Unwrap")').first();
         break;
       default:

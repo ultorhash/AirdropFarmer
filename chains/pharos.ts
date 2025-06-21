@@ -4,6 +4,28 @@ import { Logger } from "../utils/logger";
 import { Action } from "../enums";
 import { COMBINED_ADDRESS_PAIRS } from "../utils/addresses/address-pairs";
 
+export const getPharosBalance = async (
+  context: BrowserContext,
+  account: string,
+  address: string,
+  showWithLessThan: number
+): Promise<void> => {
+  const page = await context.newPage();
+  page.goto(`https://testnet.pharosscan.xyz/address/${address}`);
+  await page.waitForLoadState('networkidle');
+
+  const balanceLabel = page.locator('div', { hasText: /^Balance:$/ });
+  const balanceValue = balanceLabel.locator('xpath=following-sibling::div[1]');
+  const balance = await balanceValue.textContent();
+  const formattedBalance = +balance.split(" ")[0];
+
+  if (formattedBalance < showWithLessThan) {
+    Logger.info(account, `${balance} | ${address}`);
+  }
+
+  await page.close();
+}
+
 export const dailyCheckIn = async (
   context: BrowserContext,
   account: string,
@@ -126,7 +148,7 @@ export const zenith = async (
   page.goto("https://testnet.zenithswap.xyz/swap");
   await page.waitForLoadState('domcontentloaded');
 
-  const tokens = ["USDT"]; // wPHRS "USDC"
+  const tokens = ["USDT", "USDC"]; // wPHRS "USDC" "USDT"
   const supplyTokens = ["USDC", "USDT"];
 
   const randomToken = tokens[Math.floor(Math.random() * tokens.length)];

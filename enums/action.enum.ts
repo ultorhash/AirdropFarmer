@@ -7,5 +7,7 @@ export enum Action {
   FAUCET = "Faucet",
   MINT = "Mint",
   STAKE = "Stake",
-  REDEEM = "Redeem"
+  REDEEM = "Redeem",
+  SUPPLY = "Supply",
+  BORROW = "Borrow"
 }

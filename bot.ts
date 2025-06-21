@@ -1,11 +1,12 @@
 import { BrowserContext, Page } from "playwright";
 import { mintair, onchaingm } from "./chains/common";
-import { dailyCheckIn, faroswap, gotchipus, infiexchange, sendToFriend, turing, zenith } from "./chains/pharos";
+import { dailyCheckIn, faroswap, getPharosBalance, gotchipus, infiexchange, sendToFriend, turing, zenith } from "./chains/pharos";
 import { b3x, clober, gaspump, inarifi } from "./chains/rise";
 import { Action } from "./enums";
 import { rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
 import { Session } from "./interfaces";
 import _ from "lodash";
+import { lendFinance } from "./chains/lend-finance";
 
 const BRAVE_AUTOMATED_1 = 5;
 const BRAVE_AUTOMATED_2 = 9;
@@ -20,9 +21,8 @@ const EDGE_AUTOMATED_PATRYK = "Profile 2";
 const settings = {
   password: "!Stolica34!",
   profiles: {
-    brave: BRAVE_AUTOMATED_3,
-    edge: EDGE_AUTOMATED_3
-
+    brave: BRAVE_AUTOMATED_2,
+    edge: EDGE_AUTOMATED_2
   },
   dappsAmount: 1,
   fromAccount: 1,
@@ -31,27 +31,22 @@ const settings = {
 
 const riseDapps = [
   (ctx: BrowserContext, acc: string) => gaspump(ctx, acc, 0.00003, 0.00006, Action.SWAP, "WETH/USDC"),
-  (ctx: BrowserContext, acc: string) => gaspump(ctx, acc, 0.00003, 0.00006, Action.SWAP, "WETH/USDC"),
-  //(ctx: BrowserContext, acc: string) => clober(ctx, acc, 0.00002, 0.00005, Action.WRAP, true),
+  //(ctx: BrowserContext, acc: string) => gaspump(ctx, acc, 0.00003, 0.00006, Action.SWAP, "WETH/USDC"),
+  (ctx: BrowserContext, acc: string) => clober(ctx, acc, 0.00002, 0.00005, Action.UNWRAP, true),
   //(ctx: BrowserContext, acc: string) => inarifi(ctx, acc, 0.00002, 0.00005)
   //(ctx: BrowserContext, acc: string) => b3x(ctx, acc, 0.001, 0.003),
 ];
 
-const pharosDappsTemp = [
-  (ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0002, 0.0007, Action.SWAP),
-  (ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, false)
+const pharosDapps = [
+  //(ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0003, 0.0007, Action.SWAP),
+  //(ctx: BrowserContext, acc: string) => mintair(ctx, acc),
+  //(ctx: BrowserContext, acc: string) => gotchipus(ctx, acc),
+  //(ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, false),
+  (ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, true)
 ];
 
-const pharosDapps = [
-  //(ctx: BrowserContext, acc: string) => mintair(ctx, acc),
-  (ctx: BrowserContext, acc: string) => zenith(ctx, acc, 0.0001, 0.0006, Action.SWAP),
-  //(ctx: BrowserContext, acc: string) => gotchipus(ctx, acc),
-  //(ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, true),
-  //(ctx: BrowserContext, acc: string) => sendToFriend(ctx, acc, 0.00002, 0.00007, true),
-  //(ctx: BrowserContext, acc: string) => onchaingm(ctx, acc, 1, 2, "Pharos", 688688, false),
-  //(ctx: BrowserContext, acc: string) => faroswap(ctx, acc, 0.003, 0.008, Action.SWAP)
-  //(ctx: BrowserContext, acc: string) => infiexchange(ctx, acc, 0.003, 0.008, Action.SWAP),
-  //(ctx: BrowserContext, acc: string) => turing(ctx, acc, 0.0005, 0.003, Action.MINT),
+const lendFinanceDapps = [
+  (ctx: BrowserContext, acc: string) => lendFinance(ctx, acc, Action.SUPPLY)
 ];
 
 const runProfile = async (
@@ -71,6 +66,9 @@ const runProfile = async (
     for (const dapp of drawnDapps) {
       await dapp(context, account);
     }
+
+    // const address = await getAddress(page);
+    // await getPharosBalance(context, account, address, 0.01);
   }
 
   await context.close();

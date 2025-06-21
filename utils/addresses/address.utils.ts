@@ -1,6 +1,6 @@
 import { Page } from "playwright";
 
-export const getAddress = async (page: Page): Promise<void> => {
+export const getAddress = async (page: Page): Promise<string> => {
   await page.waitForTimeout(2000);
   await page.locator('svg.copyAddr').click();
 
@@ -9,7 +9,7 @@ export const getAddress = async (page: Page): Promise<void> => {
   });
 
   await page.waitForTimeout(1000);
-  console.log(copiedText);
+  return copiedText;
 };
 
 
