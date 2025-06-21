@@ -44,10 +44,6 @@ const pharosDapps = [
   (ctx: BrowserContext, acc: string) => dailyCheckIn(ctx, acc, true)
 ];
 
-const lendFinanceDapps = [
-  (ctx: BrowserContext, acc: string) => lendFinance(ctx, acc, Action.SUPPLY)
-];
-
 const runProfile = async (
   getSession: () => Promise<Session>,
   dapps: ((context: BrowserContext, account: string) => Promise<void>)[],
