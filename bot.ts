@@ -6,7 +6,6 @@ import { Action } from "./enums";
 import { rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
 import { Session } from "./interfaces";
 import _ from "lodash";
-import { lendFinance } from "./chains/lend-finance";
 
 const BRAVE_AUTOMATED_1 = 5;
 const BRAVE_AUTOMATED_2 = 9;
