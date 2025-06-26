@@ -3,6 +3,7 @@ import { rabbyConfirmTx, rabbyConnect } from "../utils/wallets";
 import { Logger } from "../utils/logger";
 import { Action } from "../enums";
 import { COMBINED_ADDRESS_PAIRS } from "../utils/addresses/address-pairs";
+import { faker } from "@faker-js/faker";
 
 export const getPharosBalance = async (
   context: BrowserContext,
@@ -49,7 +50,7 @@ export const dailyCheckIn = async (
     }
 
     await page.locator('button', { hasText: /^Check in$/ }).click();
-    await page.waitForTimeout(3500);
+    await page.waitForTimeout(4500);
     Logger.ok(account, "daily check in");
 
     if (reauthenticate) {
@@ -303,9 +304,35 @@ export const faroswap = async (
 ) => {
   const page = await context.newPage();
   page.goto("https://faroswap.xyz/");
-  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
 
-  await page.waitForTimeout(1_000_000);
+  try {
+    // Randomize amount and tokens to swap
+    const tokens = ["USDC", "USDT"];
+    const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
+    const amount = (Math.random() * (max - min) + min).toFixed(5);
+
+    const selectedToken = await page.locator('[data-testid="swap-select-token-btn"]').last().innerText();
+
+    // Check if random token is already selected to avoid infinite loop
+    if (randomToken !== selectedToken) {
+      await page.locator('[data-testid="swap-select-token-btn"]').last().click();
+      await page.locator('[data-testid="token-picker-item"]', { hasText: new RegExp(`^${randomToken}$`) })
+      await page.waitForTimeout(1000);
+    }
+
+    // Enter the amount and confirm
+    await page.locator('input[placeholder="0.00"]').first().fill(amount);
+    await page.locator('button', { hasText: /^Review Swap$/ }).click();
+    await page.locator('button', { hasText: /^Confirm swap$/ }).click();
+    await rabbyConfirmTx(context);
+    Logger.ok(account, "faroswap");
+
+  } catch (err: unknown) {
+    Logger.error(account, "faroswap");
+  } finally {
+    await page.close();
+  }
 }
 
 export const turing = async (
@@ -438,6 +465,53 @@ export const gotchipus = async (
   }
 }
 
+export const pharosDomainName = async (
+  context: BrowserContext,
+  account: string
+): Promise<void> => {
+  const page = await context.newPage();
+  page.goto("https://test.pharosname.com/");
+  await page.waitForLoadState('domcontentloaded');
+
+  try {
+    const prefix1 = faker.word.adjective();
+    const suffix1 = faker.animal.petName();
+    const number1 = faker.number.int({ min: 0, max: 1000 });
+    const username1 = (prefix1 + suffix1 + number1).toLowerCase();
+
+    const prefix2 = faker.food.adjective();
+    const suffix2 = faker.word.noun();
+    const username2 = (prefix2 + suffix2).toLowerCase();
+
+    const usernames = [username1, username2];
+    const randomUsername = usernames[Math.floor(Math.random() * usernames.length)];
+
+    await page.locator('input[data-testid="search-input-box"]').fill(randomUsername);
+    await page.locator('text="Available"').click();
+    await page.locator('text="Next"').click();
+    await page.locator('text="Next"').click();
+    await page.locator('text="Begin"').click();
+    await page.locator('[data-testid="transaction-modal-confirm-button"]').click();
+    await rabbyConfirmTx(context);
+
+    // Wait for second confirmation to avoid frontrunning
+    Logger.info(account, "domain name waiting 60s for frontrun safeguard...");
+    await page.waitForTimeout(60_000);
+
+    await page.locator('text="Complete registration"').click();
+    await page.locator('[data-testid="transaction-modal-confirm-button"]').click();
+    await rabbyConfirmTx(context);
+    Logger.ok(account, `domain name ${randomUsername} registration`);
+
+  } catch (err: unknown) {
+    Logger.error(account, "domain name registration");
+  } finally {
+    await page.close();
+  }
+}
+
+
 //https://appv2.fufuture.io/u/trade
 //https://app.moveflow.xyz/
 //https://playground.easy-node.xyz/
+//https://app.grandline.world/ IMPORTANT NFT (1 PHRS)
