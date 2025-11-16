@@ -1,5 +1,6 @@
-import { BrowserContext, Page, chromium } from "playwright";
+import { BrowserContext, Locator, Page, chromium } from "playwright";
 import { Session } from "../../interfaces";
+import { Logger } from "../logger";
 
 let scrollUp: boolean = true;
 
@@ -116,5 +117,27 @@ export const rabbyConnect = async (context: BrowserContext, ignoreAll: boolean):
       } catch {}
     }
     throw new Error("Rabby tx confirmation error!");
+  }
+}
+
+export const rabbyClearPendingTxs = async (page: Page, account: string, minTxToClear: number = 2): Promise<void> => {
+  let pending: Locator;
+
+  try {
+    pending = page.locator('div.transition-all.ease-in-out');
+    await pending.waitFor({ timeout: 2000, state: 'visible' });
+  } catch {
+    return;
+  }
+
+  const txAmount = +await page.locator('div.transition-all.ease-in-out > div > span').nth(0).innerText();
+  
+  if (txAmount > minTxToClear) {
+    await page.locator('text="More"').click();
+    await page.locator('div.field-slot', { hasText: /^Clear Pending Locally$/ }).click();
+    await page.waitForTimeout(500);
+    await page.locator('span', { hasText: /^Confirm$/ }).click();
+    await page.mouse.click(10, 10);
+    Logger.info(account, `cleared ${txAmount} txs`);
   }
 }

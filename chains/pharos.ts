@@ -308,7 +308,7 @@ export const faroswap = async (
 
   try {
     // Randomize amount and tokens to swap
-    const tokens = ["USDC", "USDT"];
+    const tokens = ["USDC"]; //USDT
     const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
     const amount = (Math.random() * (max - min) + min).toFixed(5);
 
@@ -330,6 +330,51 @@ export const faroswap = async (
 
   } catch (err: unknown) {
     Logger.error(account, "faroswap");
+  } finally {
+    await page.close();
+  }
+}
+
+
+export const aquaFlux = async (context: BrowserContext, account: string) => {
+  const page = await context.newPage();
+  page.goto("https://playground.aquaflux.pro/");
+  await page.waitForLoadState('networkidle');
+
+  try {
+    await page.locator('button', { hasText: /^Connect Wallet$/ }).first().click();
+    await page.click('text=Rabby Wallet');
+    await rabbyConnect(context, true);
+    await rabbyConfirmTx(context);
+
+    await page.locator('span', { hasText: /^Let's dive in$/ }).click();
+    await page.locator('[data-asset-name="Growth Corporate Bond"]').click();
+    await page.locator('button', { hasText: /^Split$/ }).nth(1).click();
+
+    await rabbyConfirmTx(context);
+
+    await page.locator('span', { hasText: /^Activate Shield$/ }).click();
+    await page.locator('span', { hasText: /^Craft My First Combo$/ }).click();
+    await page.locator('button', { hasText: /^Craft Strategy$/ }).first().click();
+    await page.locator('button', { hasText: /^Confirm & Craft$/ }).click();
+
+    await rabbyConfirmTx(context);
+
+    await page.locator('button', { hasText: /^Claim your rewards$/ }).click();
+    await page.waitForTimeout(4000);
+    await page.locator('button', { hasText: /^Check Token Balance$/ }).click();
+    await page.waitForTimeout(3000);
+    await page.locator('button', { hasText: /^Claim NFT$/ }).click();
+
+    await rabbyConfirmTx(context);
+
+    await page.locator('button.launch-app-btn').click();
+    await page.waitForTimeout(500);
+    await page.locator('div', { hasText: /^Disconnect$/ }).first().click();
+    Logger.ok(account, "Aqua Flux NFT minted");
+
+  } catch (err: unknown) {
+    Logger.error(account, "Aqua Flux");
   } finally {
     await page.close();
   }
@@ -405,113 +450,3 @@ export const turing = async (
   }
 }
 
-export const infiexchange = async (
-  context: BrowserContext,
-  account: string,
-  min: number,
-  max: number,
-  action: Action
-) => {
-  const page = await context.newPage();
-  page.goto("https://testnet.infiexchange.xyz/faucet");
-  await page.waitForLoadState('domcontentloaded');
-
-  const tokens = ["GOCTO", "INFI"];
-
-  // await page.locator('button', { hasText: /^Request GOCTO$/ }).click();
-  // await page.locator('button', { hasText: "Wait" }).waitFor({ state: 'visible' });
-
-  await page.locator('a[href="/swap"]').first().click();
-
-  const amount = Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
-  await page.locator('input[placeholder="0"]').first().fill(amount.toString());
-  await page.waitForTimeout(2000)
-
-  console.log(await page.locator('button', { hasText: /^Approve & Swap$/ }).count());
-  console.log(await page.locator('button', { hasText: /^Swap$/ }).count());
-
-  await page.locator('svg[stroke="currentColor"]').nth(3).click();
-  await page.locator('div.flex.items-center.p-3.cursor-pointer.rounded-lg > div > div').nth(4).filter({ hasText: /^GOCTO$/ }).click();
-  await page.waitForTimeout(1000);
-  await page.locator('svg[stroke="currentColor"]').nth(5).click();
-  await page.locator('div.flex.items-center.p-3.cursor-pointer.rounded-lg > div > div').nth(4).filter({ hasText: /^IFNI$/ }).click();
-
-  // Approve & Swap
-  // Swap
-  //await page.locator('button', { hasText: /^Request GOCTO$/ }).click();
-
-  await page.waitForTimeout(1_000_000);
-}
-
-export const gotchipus = async (
-  context: BrowserContext,
-  account: string
-): Promise<void> => {
-  const page = await context.newPage();
-  page.goto("https://gotchipus.com/");
-  await page.waitForLoadState('domcontentloaded');
-
-  try {
-    await page.locator('img[alt="Mint"]').click();
-    await page.locator('text=Mint Now').click();
-    await rabbyConfirmTx(context);
-    await page.waitForTimeout(1000);
-
-    Logger.ok(account, "gotchipus NFT");
-  } catch (err: unknown) {
-    Logger.error(account, "gotchipus NFT");
-  } finally {
-    await page.close();
-  }
-}
-
-export const pharosDomainName = async (
-  context: BrowserContext,
-  account: string
-): Promise<void> => {
-  const page = await context.newPage();
-  page.goto("https://test.pharosname.com/");
-  await page.waitForLoadState('domcontentloaded');
-
-  try {
-    const prefix1 = faker.word.adjective();
-    const suffix1 = faker.animal.petName();
-    const number1 = faker.number.int({ min: 0, max: 1000 });
-    const username1 = (prefix1 + suffix1 + number1).toLowerCase();
-
-    const prefix2 = faker.food.adjective();
-    const suffix2 = faker.word.noun();
-    const username2 = (prefix2 + suffix2).toLowerCase();
-
-    const usernames = [username1, username2];
-    const randomUsername = usernames[Math.floor(Math.random() * usernames.length)];
-
-    await page.locator('input[data-testid="search-input-box"]').fill(randomUsername);
-    await page.locator('text="Available"').click();
-    await page.locator('text="Next"').click();
-    await page.locator('text="Next"').click();
-    await page.locator('text="Begin"').click();
-    await page.locator('[data-testid="transaction-modal-confirm-button"]').click();
-    await rabbyConfirmTx(context);
-
-    // Wait for second confirmation to avoid frontrunning
-    Logger.info(account, "domain name waiting 60s for frontrun safeguard...");
-    await page.waitForTimeout(60_000);
-
-    await page.locator('text="Complete registration"').click();
-    await page.locator('[data-testid="transaction-modal-confirm-button"]').click();
-    await rabbyConfirmTx(context);
-    Logger.ok(account, `domain name ${randomUsername} registration`);
-
-  } catch (err: unknown) {
-    Logger.error(account, "domain name registration");
-  } finally {
-    await page.close();
-  }
-}
-
-
-//https://appv2.fufuture.io/u/trade
-//https://app.moveflow.xyz/
-//https://playground.easy-node.xyz/
-//https://app.grandline.world/ IMPORTANT NFT (1 PHRS)
