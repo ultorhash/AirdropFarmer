@@ -1,9 +1,9 @@
 import { BrowserContext, Page } from "playwright";
 import { rabbyClearPendingTxs, rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
-import { iopnSwap } from "./chains/iop";
 import { Session } from "./interfaces";
 import _ from "lodash";
 import { deployra } from "./chains/common";
+import { IOPn } from "./chains/iopn";
 
 const EDGE_AUTOMATED_1 = "Default";
 
@@ -15,12 +15,13 @@ const settings = {
   },
   dappsAmount: 1,
   fromAccount: 1,
-  toAccount: 10
+  toAccount: 100
 }
 
 const iopnDapps = [
-  //(ctx: BrowserContext, acc: string) => iopnSwap(ctx, acc, 0.001, 0.003),
-  (ctx: BrowserContext, acc: string) => deployra(ctx, acc, "IOPn")
+  (ctx: BrowserContext, acc: string) => IOPn.swap(ctx, acc, 0.001, 0.005),
+  //(ctx: BrowserContext, acc: string) => iopnLiquidity(ctx, acc),
+  //(ctx: BrowserContext, acc: string) => deployra(ctx, acc, "IOPn")
 ];
 
 const runProfile = async (
