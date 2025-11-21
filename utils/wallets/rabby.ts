@@ -1,10 +1,10 @@
 import { BrowserContext, Locator, Page, chromium } from "playwright";
-import { Session } from "../../interfaces";
+import { ISession } from "../../interfaces";
 import { Logger } from "../logger";
 
 let scrollUp: boolean = true;
 
-export const rabbyLoginBrave = async (profile: number, password: string): Promise<Session> => {
+export const rabbyLoginBrave = async (profile: number, password: string): Promise<ISession> => {
   const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
 
@@ -25,7 +25,7 @@ export const rabbyLoginBrave = async (profile: number, password: string): Promis
   return { context, page };
 }
 
-export const rabbyLoginEdge = async (profile: string, password: string): Promise<Session> => {
+export const rabbyLoginEdge = async (profile: string, password: string): Promise<ISession> => {
   const edgePath = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
   const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\Microsoft\\Edge\\User Data";
 

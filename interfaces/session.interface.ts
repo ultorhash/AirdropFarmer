@@ -1,6 +1,6 @@
 import { BrowserContext, Page } from "playwright";
 
-export interface Session {
+export interface ISession {
   context: BrowserContext;
   page: Page;
 }

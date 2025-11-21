@@ -1,31 +1,32 @@
 import { BrowserContext, Page } from "playwright";
 import { rabbyClearPendingTxs, rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
-import { Session } from "./interfaces";
+import * as dotenv from "dotenv";
+import { ISettings, ISession } from "./interfaces";
 import _ from "lodash";
 import { deployra } from "./chains/common";
 import { IOPn } from "./chains/iopn";
 
+dotenv.config({ quiet: true });
+
 const EDGE_AUTOMATED_1 = "Default";
 
-const settings = {
-  password: "!Stolica34!",
+const settings: ISettings = {
+  walletPassword: process.env.WALLET_PASSWORD,
+  accountRange: {
+    from: 1,
+    to: 100
+  },
   profiles: {
-    brave: 0,
     edge: EDGE_AUTOMATED_1
   },
-  dappsAmount: 1,
-  fromAccount: 1,
-  toAccount: 100
+  dappsToVisit: 1,
+  dapps: [
+    (ctx, acc) => IOPn.swap(ctx, acc, 0.001, 0.005)
+  ]
 }
 
-const iopnDapps = [
-  (ctx: BrowserContext, acc: string) => IOPn.swap(ctx, acc, 0.001, 0.005),
-  //(ctx: BrowserContext, acc: string) => iopnLiquidity(ctx, acc),
-  //(ctx: BrowserContext, acc: string) => deployra(ctx, acc, "IOPn")
-];
-
 const runProfile = async (
-  getSession: () => Promise<Session>,
+  getSession: () => Promise<ISession>,
   dapps: ((context: BrowserContext, account: string) => Promise<void>)[],
   dappsAmount: number,
   fromAccount: number,
@@ -48,13 +49,16 @@ const runProfile = async (
 };
 
 const bot = async (): Promise<void> => {
-  const { password, profiles, dappsAmount, fromAccount, toAccount } = settings;
+  const { walletPassword, accountRange, profiles, dappsToVisit, dapps } = settings;
+  const { from, to } = accountRange;
   const { brave, edge } = profiles;
 
-  await Promise.all([
-    //runProfile(() => rabbyLoginBrave(brave, password), iopDapps, dappsAmount, fromAccount, toAccount),
-    runProfile(() => rabbyLoginEdge(edge, password), iopnDapps, dappsAmount, fromAccount, toAccount)
-  ]);
+  await Promise.all(
+    [
+      brave && runProfile(() => rabbyLoginBrave(brave, walletPassword), dapps, dappsToVisit, from, to),
+      edge && runProfile(() => rabbyLoginEdge(edge, walletPassword), dapps, dappsToVisit, from, to)
+    ].filter(Boolean)
+  );
 }
 
 bot().catch(console.error);
