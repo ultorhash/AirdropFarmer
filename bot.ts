@@ -1,4 +1,3 @@
-import { BrowserContext, Page } from "playwright";
 import * as dotenv from "dotenv";
 import { ISettings, ISession } from "./interfaces";
 import _ from "lodash";
@@ -16,7 +15,8 @@ const settings: ISettings = {
   range: { from: 1, to: 100 },
   dappsToVisit: 1,
   dapps: [
-    (ctx, acc) => IOPn.swap(ctx, acc, 0.001, 0.005)
+    (ctx, acc) => IOPn.swap(ctx, acc, 0.001, 0.005),
+    (ctx, acc) => deployra(ctx, acc, "IOPn")
   ],
   clearPendingTxs: false
 }

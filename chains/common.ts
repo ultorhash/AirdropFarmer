@@ -1,7 +1,7 @@
 import { BrowserContext } from "playwright";
 import { Logger } from "../utils/logger";
-import { rabbyConfirmTx } from "../utils/wallets";
 import { faker } from "@faker-js/faker";
+import { Rabby } from "../utils/rabby";
 
 export const deployra = async (
   context: BrowserContext,
@@ -31,12 +31,12 @@ export const deployra = async (
       await page.locator('input[placeholder="Symbol"]').fill(acronym);
 
       await page.locator('button[type="submit"]').click();
-      await rabbyConfirmTx(context);
+      await Rabby.confirmTxAsync(context);
       Logger.ok(account, `${chain} deploy token [${word} | ${acronym}]`);
 
     } else {
       await page.locator('button[type="submit"]').click();
-      await rabbyConfirmTx(context);
+      await Rabby.confirmTxAsync(context);
       Logger.ok(account, `${chain} deploy ${randomOption}`);
     }
 
