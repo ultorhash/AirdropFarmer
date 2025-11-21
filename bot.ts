@@ -1,44 +1,39 @@
 import { BrowserContext, Page } from "playwright";
-import { rabbyClearPendingTxs, rabbyLoginBrave, rabbyLoginEdge, rabbySwitchAccount } from "./utils/wallets";
 import * as dotenv from "dotenv";
 import { ISettings, ISession } from "./interfaces";
 import _ from "lodash";
 import { deployra } from "./chains/common";
 import { IOPn } from "./chains/iopn";
+import { Rabby } from "./utils/rabby";
 
 dotenv.config({ quiet: true });
 
 const EDGE_AUTOMATED_1 = "Default";
 
 const settings: ISettings = {
-  walletPassword: process.env.WALLET_PASSWORD,
-  accountRange: {
-    from: 1,
-    to: 100
-  },
-  profiles: {
-    edge: EDGE_AUTOMATED_1
-  },
+  password: process.env.PASSWORD,
+  profiles: { edge: EDGE_AUTOMATED_1 },
+  range: { from: 1, to: 100 },
   dappsToVisit: 1,
   dapps: [
     (ctx, acc) => IOPn.swap(ctx, acc, 0.001, 0.005)
-  ]
+  ],
+  clearPendingTxs: false
 }
 
-const runProfile = async (
-  getSession: () => Promise<ISession>,
-  dapps: ((context: BrowserContext, account: string) => Promise<void>)[],
-  dappsAmount: number,
-  fromAccount: number,
-  toAccount: number
-): Promise<void> => {
+const runProfileAsync = async (getSession: () => Promise<ISession>, settings: ISettings): Promise<void> => {
   const { context, page } = await getSession();
+  const { dapps, dappsToVisit, range: { from, to }, clearPendingTxs } = settings;
 
-  for (let i = fromAccount; i <= toAccount; i++) {
+  for (let i = from; i <= to; i++) {
     const account = `#${i}`;
-    await rabbySwitchAccount(page, account);
-    //await rabbyClearPendingTxs(page, account);
-    const drawnDapps = _.sampleSize(dapps, dappsAmount);
+    await Rabby.switchAccountAsync(page, account);
+
+    if (clearPendingTxs) {
+      await Rabby.clearPendingTxsAsync(page, account);
+    }
+
+    const drawnDapps = _.sampleSize(dapps, dappsToVisit);
 
     for (const dapp of drawnDapps) {
       await dapp(context, account);
@@ -49,14 +44,13 @@ const runProfile = async (
 };
 
 const bot = async (): Promise<void> => {
-  const { walletPassword, accountRange, profiles, dappsToVisit, dapps } = settings;
-  const { from, to } = accountRange;
+  const { password, profiles } = settings;
   const { brave, edge } = profiles;
 
   await Promise.all(
     [
-      brave && runProfile(() => rabbyLoginBrave(brave, walletPassword), dapps, dappsToVisit, from, to),
-      edge && runProfile(() => rabbyLoginEdge(edge, walletPassword), dapps, dappsToVisit, from, to)
+      brave && runProfileAsync(() => Rabby.loginBraveAsync(brave, password), settings),
+      edge && runProfileAsync(() => Rabby.loginEdgeAsync(edge, password), settings)
     ].filter(Boolean)
   );
 }

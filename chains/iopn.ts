@@ -1,6 +1,6 @@
 import { BrowserContext } from "playwright";
-import { rabbyConfirmTx } from "../utils/wallets";
 import { Logger } from "../utils/logger";
+import { Rabby } from "../utils/rabby";
 
 export class IOPn {
   public static swap = async (
@@ -26,7 +26,7 @@ export class IOPn {
       await page.locator('input[placeholder="0.0"]').first().fill(amount);
       await page.locator('button.glow-purple-lg:has-text("Swap")').click();
 
-      await rabbyConfirmTx(context);
+      await Rabby.confirmTxAsync(context);
       Logger.ok(account, `IOPn swap for ${randomToken}`);
 
     } catch (err: unknown) {
@@ -60,12 +60,12 @@ export class IOPn {
       await page.locator('input[placeholder="0.0"]').last().fill(amount15PercentRounded12);
       await page.locator('button.bg-gradient-to-r.from-purple-500.to-pink-500:has-text("Add Liquidity")').click();
 
-      await rabbyConfirmTx(context);
+      await Rabby.confirmTxAsync(context);
 
       const statusText = await page.locator('div[role="status"][aria-live="polite"]').textContent();
 
       if (statusText.includes("approval")) {
-        await rabbyConfirmTx(context);
+        await Rabby.confirmTxAsync(context);
       }
       
       Logger.ok(account, `IOPn liquidity IOPn + ${randomToken}`);

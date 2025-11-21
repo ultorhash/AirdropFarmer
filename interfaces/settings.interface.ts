@@ -1,15 +1,16 @@
 import { BrowserContext } from "playwright";
 
 export interface ISettings {
-  walletPassword: string;
-  accountRange: {
-    from: number;
-    to: number;
-  }
+  password: string;
   profiles: {
     brave?: number;
     edge?: string;
   }
+  range: {
+    from: number;
+    to: number;
+  }
   dappsToVisit: number;
   dapps: ((ctx: BrowserContext, acc: string) => Promise<void>)[];
+  clearPendingTxs: boolean;
 }
