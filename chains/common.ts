@@ -10,7 +10,7 @@ export const deployra = async (
 ): Promise<void> => {
   const page = await context.newPage();
   page.goto("https://app.deployra.xyz/");
-  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('networkidle');
 
   try {
     await page.locator('input[placeholder="Search by name or ID..."]').fill(chain);

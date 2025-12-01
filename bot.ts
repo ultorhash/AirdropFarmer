@@ -1,9 +1,9 @@
 import * as dotenv from "dotenv";
 import { ISettings, ISession } from "./interfaces";
-import _ from "lodash";
 import { deployra } from "./chains/common";
 import { IOPn } from "./chains/iopn";
 import { Rabby } from "./utils/rabby";
+import _ from "lodash";
 
 dotenv.config({ quiet: true });
 
@@ -13,9 +13,11 @@ const settings: ISettings = {
   password: process.env.PASSWORD,
   profiles: { edge: EDGE_AUTOMATED_1 },
   range: { from: 1, to: 100 },
-  dappsToVisit: 1,
+  dappsToVisit: 2,
   dapps: [
-    (ctx, acc) => IOPn.swap(ctx, acc, 0.001, 0.005),
+    (ctx, acc) => IOPn.swap(ctx, acc, 0.005, 0.02, true),
+    (ctx, acc) => IOPn.swap(ctx, acc, 0.008, 0.02, true),
+    (ctx, acc) => IOPn.liquidity(ctx, acc),
     (ctx, acc) => deployra(ctx, acc, "IOPn")
   ],
   clearPendingTxs: false
