@@ -1,16 +1,16 @@
 import { BrowserContext, Locator, Page, chromium } from "playwright";
 import { ISession } from "../interfaces";
 import { Logger } from "./logger";
+import * as dotenv from "dotenv";
+
+dotenv.config({ quiet: true });
 
 export class Rabby {
   private static scrollUp: boolean = true;
 
   public static loginBraveAsync = async (profile: number, password: string): Promise<ISession> => {
-    const bravePath = "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe";
-    const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data";
-
-    const context = await chromium.launchPersistentContext(userDataDir, {
-      executablePath: bravePath,
+    const context = await chromium.launchPersistentContext(process.env.BRAVE_USER_DATA_DIR, {
+      executablePath: process.env.BRAVE_PATH,
       ignoreDefaultArgs: true,
       args: [
         `--profile-directory=Profile ${profile}`,
@@ -27,11 +27,8 @@ export class Rabby {
   }
 
   public static loginEdgeAsync = async (profile: string, password: string): Promise<ISession> => {
-    const edgePath = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
-    const userDataDir = "C:\\Users\\rajsk\\AppData\\Local\\Microsoft\\Edge\\User Data";
-
-    const context = await chromium.launchPersistentContext(userDataDir, {
-      executablePath: edgePath,
+    const context = await chromium.launchPersistentContext(process.env.EDGE_USER_DATA_DIR, {
+      executablePath: process.env.EDGE_PATH,
       ignoreDefaultArgs: true,
       args: [
         `--profile-directory=${profile}`,
@@ -40,7 +37,7 @@ export class Rabby {
     });
 
     const [page] = context.pages();
-    await page.goto('chrome-extension://acmacodkjbdgmoleebolmdjonilkdbch/index.html#');
+    await page.goto(`chrome-extension://${process.env.EXTENSION_FOLDER}/index.html#`);
     await page.locator('input[type="password"]').fill(password);
     await page.locator('span:has-text("Unlock")').click();
 

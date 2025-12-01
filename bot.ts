@@ -1,8 +1,8 @@
-import * as dotenv from "dotenv";
 import { ISettings, ISession } from "./interfaces";
 import { deployra } from "./chains/common";
 import { IOPn } from "./chains/iopn";
 import { Rabby } from "./utils/rabby";
+import * as dotenv from "dotenv";
 import _ from "lodash";
 
 dotenv.config({ quiet: true });
